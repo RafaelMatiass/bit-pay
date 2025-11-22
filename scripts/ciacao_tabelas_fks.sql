@@ -144,8 +144,15 @@ CREATE TABLE Contas (
     numeroConta VARCHAR2(10 CHAR) NOT NULL,
     saldo NUMBER(10,2),
     dataAbertura DATE NOT NULL,
-    idStatusConta NUMBER(10) NOT NULL
+    idStatusConta NUMBER(10) NOT NULL,
+    idCliente NUMBER(10) unique not null
 );
+
+ALTER TABLE Contas
+DROP COLUMN ContaDestino;
+
+ALTER TABLE Contas
+ADD idCliente int NOT NULL;
 
 -- Tabela: Clientes
 CREATE SEQUENCE seq_Clientes 
@@ -154,15 +161,19 @@ CREATE SEQUENCE seq_Clientes
     NOCACHE 
     NOCYCLE;
 CREATE TABLE Clientes (
-    id NUMBER(10) DEFAULT seq_Clientes.NEXTVAL NOT NULL,
+    id NUMBER(10),
     nome VARCHAR2(150 CHAR) NOT NULL,
     dataNascimento DATE NOT NULL,
     dataCadastro DATE NOT NULL,
     idUsuario NUMBER(10) NOT NULL,
     idEndereco NUMBER(10) NOT NULL,
-    idTelefone NUMBER(10) NOT NULL,
-    idConta NUMBER(10) NOT NULL
+    idTelefone NUMBER(10) NOT NULL
 );
+
+ALTER TABLE Clientes
+ADD CONSTRAINT Cliente_da_pk PRIMARY KEY (id);
+ALTER TABLE Clientes
+DROP COLUMN IdConta;
 
 -- Tabela: AplicacoesInvestimentos
 CREATE SEQUENCE seq_AplicacoesInvestimentos
@@ -251,10 +262,6 @@ ADD CONSTRAINT
     fk_Clientes_Endereco FOREIGN KEY (idEndereco) 
     REFERENCES Enderecos(id);
     
-ALTER TABLE Clientes 
-ADD CONSTRAINT 
-    fk_Clientes_Conta FOREIGN KEY (idConta) 
-    REFERENCES Contas(id);
 
 -- Foreign Keys da Tabela: Gerentes
 ALTER TABLE Gerentes 
@@ -277,6 +284,11 @@ ALTER TABLE Contas
 ADD CONSTRAINT 
     fk_Contas_Status FOREIGN KEY (idStatusConta)
     REFERENCES StatusConta(id);
+    
+ALTER TABLE Contas 
+ADD CONSTRAINT 
+    fk_Conta_Clientes FOREIGN KEY (idCliente) 
+    REFERENCES Clientes(id);
 
 -- Foreign Keys da Tabela: AplicacoesInvestimentos
 ALTER TABLE AplicacoesInvestimentos 

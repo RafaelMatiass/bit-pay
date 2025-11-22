@@ -24,5 +24,11 @@ public class LoginServlet extends HttpServlet {
 		sessao.setAttribute("idUsuarioLogado", 1L);
 		response.sendRedirect("home");
 	}
+	
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+		
+		
+		response.sendRedirect("index.jsp");
+	}
 
 }
