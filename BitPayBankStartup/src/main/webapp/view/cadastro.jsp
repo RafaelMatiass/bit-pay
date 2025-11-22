@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Bit Pay - Abrir Conta</title>
+    <base href="<%= request.getContextPath() %>/">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -97,7 +98,7 @@
 
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" class="btn btn-success btn-lg">Abrir Minha Conta</button>
-                                <a href="../index.jsp" class="btn btn-outline-secondary">Voltar para o Login</a>
+                                <a href="index.jsp" class="btn btn-outline-secondary">Voltar para o Login</a>
                             </div>
                         </form>
                         

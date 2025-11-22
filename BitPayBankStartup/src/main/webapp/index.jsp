@@ -38,12 +38,14 @@
                             Ainda não é cliente? <a href="cadastro-page">Quero abrir uma conta</a>
                            </p>
                         
+                         <!-- Mensagem de feedback (sucesso/erro) -->
                         <% 
-                            String erro = (String) request.getAttribute("erro");
-                            if (erro != null) { 
+                            String mensagem = (String) request.getAttribute("mensagem");
+                            String tipo = (String) request.getAttribute("tipoMensagem");
+                            if (mensagem != null) { 
                         %>
-                            <div class="alert alert-danger mt-3" role="alert">
-                                <%= erro %>
+                            <div class="alert alert-<%= tipo %> mt-3" role="alert">
+                                <%= mensagem %>
                             </div>
                         <% } %>
                     </div>
