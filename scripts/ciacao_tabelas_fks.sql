@@ -148,11 +148,6 @@ CREATE TABLE Contas (
     idCliente NUMBER(10) unique not null
 );
 
-ALTER TABLE Contas
-DROP COLUMN ContaDestino;
-
-ALTER TABLE Contas
-ADD idCliente int NOT NULL;
 
 -- Tabela: Clientes
 CREATE SEQUENCE seq_Clientes 
@@ -161,7 +156,7 @@ CREATE SEQUENCE seq_Clientes
     NOCACHE 
     NOCYCLE;
 CREATE TABLE Clientes (
-    id NUMBER(10),
+    id NUMBER(10) PRIMARY KEY,
     nome VARCHAR2(150 CHAR) NOT NULL,
     dataNascimento DATE NOT NULL,
     dataCadastro DATE NOT NULL,
@@ -169,11 +164,6 @@ CREATE TABLE Clientes (
     idEndereco NUMBER(10) NOT NULL,
     idTelefone NUMBER(10) NOT NULL
 );
-
-ALTER TABLE Clientes
-ADD CONSTRAINT Cliente_da_pk PRIMARY KEY (id);
-ALTER TABLE Clientes
-DROP COLUMN IdConta;
 
 -- Tabela: AplicacoesInvestimentos
 CREATE SEQUENCE seq_AplicacoesInvestimentos
@@ -200,6 +190,7 @@ CREATE TABLE Movimentacoes (
     valor NUMBER(10,2) NOT NULL,
     dataMovimento DATE NOT NULL,
     idConta NUMBER(10) NOT NULL,
+    idContaDestino NUMBER(10),
     idTipoMovimento NUMBER(10) NOT NULL
 );
 
@@ -262,7 +253,6 @@ ADD CONSTRAINT
     fk_Clientes_Endereco FOREIGN KEY (idEndereco) 
     REFERENCES Enderecos(id);
     
-
 -- Foreign Keys da Tabela: Gerentes
 ALTER TABLE Gerentes 
 ADD CONSTRAINT 
@@ -273,6 +263,11 @@ ADD CONSTRAINT
 ALTER TABLE Movimentacoes 
 ADD CONSTRAINT 
     fk_Movimentacoes_Conta FOREIGN KEY (idConta)
+    REFERENCES Contas(id);
+
+ALTER TABLE Movimentacoes 
+ADD CONSTRAINT 
+    fk_Movimentacoes_Conta_Destino FOREIGN KEY (idContaDestino)
     REFERENCES Contas(id);
     
 ALTER TABLE Movimentacoes ADD CONSTRAINT
@@ -320,4 +315,3 @@ ALTER TABLE ParcelasEmprestimos ADD CONSTRAINT
 ALTER TABLE ParcelasEmprestimos ADD CONSTRAINT 
     fk_Parcelas_Emprestimo FOREIGN KEY (idEmprestimo)
     REFERENCES Emprestimos(id);
-
