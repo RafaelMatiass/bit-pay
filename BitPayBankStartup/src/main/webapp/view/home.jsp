@@ -68,6 +68,15 @@
                 </a>
             </div>
 
+ 			<div class="col-md-4">
+                <a href="deposito" class="text-decoration-none">
+                    <div class="card p-3 text-center h-100">
+                        <i class="bi bi-cash-stack fs-1"></i>
+                        <h5>Fazer Depósito</h5>
+                    </div>
+                </a>
+            </div>
+            
             <div class="col-md-4">
                 <a href="extrato-page" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">

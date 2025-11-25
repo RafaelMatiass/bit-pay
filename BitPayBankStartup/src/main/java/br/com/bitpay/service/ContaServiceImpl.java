@@ -16,6 +16,8 @@ import br.com.bitpay.util.ConnectionFactory;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
@@ -114,6 +116,41 @@ public class ContaServiceImpl implements ContaService {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+    
+    @Override
+    public Conta buscarContaAtualizada(int idConta) throws Exception {
+        
+        Connection conn = null;
+        String sqlRefresh = "SELECT id, numeroConta, saldo, idStatusConta FROM CONTAS WHERE id = ?";
+
+        try {
+            conn = ConnectionFactory.getConnection();
+            
+            try (PreparedStatement stmt = conn.prepareStatement(sqlRefresh)) {
+                stmt.setInt(1, idConta);
+                
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        Conta contaAtualizada = new Conta();
+                        contaAtualizada.setContaId(rs.getInt("id"));
+                        contaAtualizada.setNumeroConta(rs.getString("numeroConta"));
+                        contaAtualizada.setSaldo(rs.getBigDecimal("saldo")); 
+                        
+                        int codigoStatus = rs.getInt("idStatusConta");
+                        contaAtualizada.setStatusConta(StatusConta.getByCodigo(codigoStatus));
+                        
+                        return contaAtualizada; 
+                    }
+                }
+            }
+            throw new Exception("Conta não encontrada ao tentar atualizar saldo.");
+
+        } catch (SQLException e) {
+            throw new Exception("Erro ao buscar conta atualizada no DB: " + e.getMessage(), e);
+        } finally {
+            conn.close();
         }
     }
 }
