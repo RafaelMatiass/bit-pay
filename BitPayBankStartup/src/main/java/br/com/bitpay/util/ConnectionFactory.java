@@ -4,17 +4,13 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-
-
 import oracle.jdbc.datasource.impl.OracleDataSource;
-
-
 
 public class ConnectionFactory {
 
   
     private static final String StringConexao = "jdbc:oracle:thin:@localhost:1521/FREEPDB1"; 
-    private static final String Usuario = "BITPAY_SCHEMA";
+    private static final String Usuario = "bitpay_schema";
     private static final String Senha = "senha123";
 
     

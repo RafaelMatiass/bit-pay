@@ -12,31 +12,19 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/home")
 public class HomeServlet extends HttpServlet{
 
-	private static final long serialVersionUID = 1L;
-	
-	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
-		HttpSession sessao = request.getSession(false);
-		
-		if(sessao== null || sessao.getAttribute("idUsuarioLogado") == null ) {
-			 response.sendRedirect("login.jsp");
-			 return;
-		}
-		
-	
-		
-		// aqui devemos chamar os métodos do DAO que acessa o banco e traz os dados do usuário com
-		// o id da sessão e preenche a página home com esses dados
-		
-		String nomeUsuario = "Lucas (Usuário de Teste)";
-        double saldoConta = 1500.75;
+    private static final long serialVersionUID = 1L;
+    
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
-       
-        request.setAttribute("nomeUsuario", nomeUsuario);
-        request.setAttribute("saldoConta", saldoConta);
+        HttpSession sessao = request.getSession(false);
+        
+        if(sessao == null || sessao.getAttribute("cliente") == null ) {
+            response.sendRedirect("index.jsp"); 
+            return;
+        }
         
         request.getRequestDispatcher("/view/home.jsp").forward(request, response);
-		
-	}
+        
+    }
 
 }

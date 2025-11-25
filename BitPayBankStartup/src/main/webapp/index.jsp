@@ -19,8 +19,8 @@
                         
                         <form action="login" method="POST">
                             <div class="mb-3">
-                                <label for="cpf" class="form-label">CPF</label>
-                                <input type="text" class="form-control" id="cpf" name="cpf" required>
+                                <label for="email" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="email" name="email" required>
                             </div>
                             <div class="mb-3">
                                 <label for="senha" class="form-label">Senha</label>
@@ -33,8 +33,7 @@
                         </form>
                         
                             <p class="text-center">
-                           <!-- Link de Cadastro (Teste 2) -->
-                           <!-- Chamando o Servlet, não o JSP! -->
+
                             Ainda não é cliente? <a href="cadastro-page">Quero abrir uma conta</a>
                            </p>
                         

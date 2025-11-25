@@ -5,23 +5,18 @@ import br.com.bitpay.model.Enums.TipoUsuario;
 public class Usuario {
 	
 	private int id;
-	private String CPF;  
+	private String Cpf;  
 	private String Senha;
 	private String Email;
 	private TipoUsuario tipoUsuario;
 	
-	public Usuario(String cpf, String senha, String email, TipoUsuario tipoUsuario) {
-		CPF = cpf;
-		Senha = senha;
-		Email = email;
-		this.tipoUsuario = tipoUsuario;
-	}
+	public Usuario() {
+    }
 	
-	public Usuario(int id, String cpf, String senha, String email, TipoUsuario tipoUsuario) {
-		this.id = id;
-		CPF = cpf;
-		Senha = senha;
-		Email = email;
+	public Usuario(String cpf, String senha, String email, TipoUsuario tipoUsuario) {
+		this.Cpf = cpf;
+		this.Senha = senha;
+		this.Email = email;
 		this.tipoUsuario = tipoUsuario;		
 	}
 
@@ -33,12 +28,12 @@ public class Usuario {
 		this.id = id;
 	}
 
-	public String getCPF() {
-		return CPF;
+	public String getCpf() {
+		return Cpf;
 	}
 
-	public void setCPF(String cPF) {
-		CPF = cPF;
+	public void setCpf(String cpf) {
+		Cpf = cpf;
 	}
 
 	public String getSenha() {

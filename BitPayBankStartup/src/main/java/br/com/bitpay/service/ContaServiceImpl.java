@@ -22,14 +22,12 @@ import java.time.LocalDate;
 
 public class ContaServiceImpl implements ContaService {
 
-    // DAOs necessários para o fluxo
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
     private final EnderecoDAO enderecoDAO = new EnderecoDAO();
     private final TelefoneDAO telefoneDAO = new TelefoneDAO();
     private final ClienteDAO clienteDAO = new ClienteDAO();
     private final ContaDAO contaDAO = new ContaDAO();
 
-    // Constantes de negócio
     private static final int COD_PAIS_PADRAO = 55; 
 
     @Override
@@ -40,30 +38,23 @@ public class ContaServiceImpl implements ContaService {
         Connection conn = null;
         
         try {
-            // 1. INÍCIO DA TRANSAÇÃO
             conn = ConnectionFactory.getConnection();
-            conn.setAutoCommit(false); // Desliga o commit automático
+            conn.setAutoCommit(false);
 
-            // 2. VALIDAÇÃO DE NEGÓCIO (Verificar duplicidade)
             if (usuarioDAO.existeUsuario(conn, cpf, email)) {
                 throw new IllegalArgumentException("CPF ou E-mail já cadastrados.");
             }
 
-            // 3. PREPARAÇÃO DOS OBJETOS (Parsing e Construção)
-            
-            // 3.1 Endereço
             int numeroEndereco;
             try {
                 numeroEndereco = Integer.parseInt(numeroStr);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Número do endereço inválido.");
             }
-            // Cria o objeto Endereco (sem ID ainda)
-            Endereco novoEndereco = new Endereco(logradouro, numeroEndereco, bairro, cidade, estado, cep);
-
-            // 3.2 Telefone (Lógica simples de extração)
+            Endereco novoEndereco = new Endereco(logradouro, numeroEndereco, null, bairro, cidade, estado, cep);
+            
             String telLimpo = telefoneStr.replaceAll("[^0-9]", "");
-            int codArea = 11; // Valor padrão caso falhe a extração
+            int codArea = 11; 
             long numeroTel = 0;
             try {
                 if (telLimpo.length() >= 10) {
@@ -77,25 +68,19 @@ public class ContaServiceImpl implements ContaService {
             }
             Telefone novoTelefone = new Telefone(COD_PAIS_PADRAO, codArea, numeroTel);
 
-            // 4. PERSISTÊNCIA EM CASCATA
-            
-            // PASSO A: Inserir Usuário (Login) -> Gera idUsuario
             Usuario novoUsuario = new Usuario(cpf, senha, email, TipoUsuario.CLIENTE);
             int idUsuario = usuarioDAO.inserir(conn, novoUsuario);
             novoUsuario.setId(idUsuario);
 
-            // PASSO B: Inserir Endereço -> Gera idEndereco
             int idEndereco = enderecoDAO.inserirEndereco(conn, novoEndereco);
-            // Opcional: atualizar o objeto com o ID gerado
             novoEndereco.setId(idEndereco); 
 
-            // PASSO C: Inserir Telefone -> Gera idTelefone
             int idTelefone = telefoneDAO.inserirTelefone(conn, novoTelefone);
             novoTelefone.setId(idTelefone);
 
           
-            Cliente novoCliente = new Cliente(idUsuario,cpf, senha, email, TipoUsuario.CLIENTE, nome, dataNascimento, LocalDate.now(),novoEndereco, novoTelefone);
-            
+            Cliente novoCliente = new Cliente(cpf, senha, email, TipoUsuario.CLIENTE, nome, dataNascimento, LocalDate.now(),novoEndereco, novoTelefone);
+            novoCliente.setId(idUsuario);
            
             clienteDAO.inserir(conn, novoCliente);
             
@@ -106,12 +91,9 @@ public class ContaServiceImpl implements ContaService {
             
             contaDAO.inserirConta(conn, novaConta);
 
-            // 5. SUCESSO FINAL
             conn.commit();
-            System.out.println("Cadastro realizado com sucesso para o CPF: " + cpf);
 
         } catch (Exception e) {
-            // 6. FALHA (ROLLBACK)
             if (conn != null) {
                 try {
                     conn.rollback();
@@ -120,10 +102,11 @@ public class ContaServiceImpl implements ContaService {
                     ex.printStackTrace();
                 }
             }
+            
+            e.printStackTrace();  
+            throw e;
            
-            throw new Exception("Erro ao criar conta: " + e.getMessage(), e);
         } finally {
-            // 7. FECHAR
             if (conn != null) {
                 try {
                     conn.close();

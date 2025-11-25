@@ -14,6 +14,9 @@ public class Conta {
 	private StatusConta statusConta;
 	private Cliente cliente;
 	
+	public Conta() {
+	}
+	
 	public Conta(String numeroConta, BigDecimal saldo,  LocalDate dataAbertura, StatusConta statusConta, Cliente cliente) {
 		NumeroConta = numeroConta;
 		Saldo = saldo;

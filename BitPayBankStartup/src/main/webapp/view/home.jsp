@@ -1,16 +1,23 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="br.com.bitpay.model.Cliente" %>
+<%@ page import="br.com.bitpay.model.Conta" %>
+<%@ page import="java.math.BigDecimal" %>
 <%@ page import="java.text.NumberFormat, java.util.Locale" %>
-<%! 
-    
-%>
+
 <%
-    // Scriptlets (código que roda em cada requisição)
-    String nomeUsuario = (String) request.getAttribute("nomeUsuario");
-    Double saldoConta = (Double) request.getAttribute("saldoConta");
+
+    Cliente cliente = (Cliente) session.getAttribute("cliente");
+    Conta conta = (Conta) session.getAttribute("conta");
+
+    if (cliente == null || conta == null) {
+        response.sendRedirect("login"); 
+        return;
+    }
+    String nomeUsuario = cliente.getNome();
+    BigDecimal saldoConta = conta.getSaldo(); 
     
-    // Configuração e formatação de moeda (R$)
     NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
-    String saldoFormatado = nf.format(saldoConta != null ? saldoConta : 0.0);
+    String saldoFormatado = nf.format(saldoConta); 
 %>
 
 <!DOCTYPE html>
@@ -31,7 +38,7 @@
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
               <span class="navbar-text">
-                Olá, <%= nomeUsuario != null ? nomeUsuario : "Visitante" %>
+                Olá, <%= nomeUsuario.split(" ")[0] %>
               </span>
             </li>
             <li class="nav-item ms-3">
@@ -43,7 +50,7 @@
     </nav>
 
     <header class="container mt-4 p-5 bg-light rounded">
-        <p class="h5">Saldo em Conta Corrente</p>
+        <p class="h5">Saldo em Conta Corrente (<%= conta.getNumeroConta() %>)</p>
         <p class="display-4"><%= saldoFormatado %></p>
     </header>
 
@@ -53,7 +60,7 @@
         <div class="row g-3">
             
             <div class="col-md-4">
-                <a href="transferencia.jsp" class="text-decoration-none">
+                <a href="transferencia-page" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-send-fill fs-1"></i>
                         <h5>Fazer Transferência</h5>
@@ -62,7 +69,7 @@
             </div>
 
             <div class="col-md-4">
-                <a href="extrato.jsp" class="text-decoration-none">
+                <a href="extrato-page" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-receipt-cutoff fs-1"></i>
                         <h5>Gerar Extrato</h5>
@@ -71,7 +78,7 @@
             </div>
 
             <div class="col-md-4">
-                <a href="investimentos.jsp" class="text-decoration-none">
+                <a href="investimentos-page" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-graph-up-arrow fs-1"></i>
                         <h5>Investimentos</h5>
@@ -80,7 +87,7 @@
             </div>
 
             <div class="col-md-4">
-                <a href="emprestimo.jsp" class="text-decoration-none">
+                <a href="emprestimo-page" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-cash-coin fs-1"></i>
                         <h5>Simular Empréstimo</h5>
@@ -89,7 +96,7 @@
             </div>
 
             <div class="col-md-4">
-                <a href="meus-dados.jsp" class="text-decoration-none">
+                <a href="meus-dados-page" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-person-fill fs-1"></i>
                         <h5>Meus Dados Pessoais</h5>

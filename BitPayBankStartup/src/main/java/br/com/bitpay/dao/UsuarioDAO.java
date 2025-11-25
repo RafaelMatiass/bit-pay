@@ -1,6 +1,7 @@
 package br.com.bitpay.dao;
 
 import br.com.bitpay.model.Usuario;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,15 +10,15 @@ import java.sql.SQLException;
 public class UsuarioDAO {
 
     public int inserir(Connection conn, Usuario usuario) throws SQLException {
-        // Inserção usando sequence e RETURNING para obter ID gerado
-        String sql = "INSERT INTO Usuarios (id, cpf, senha, email, idTipoUsuario) " +
+
+    	String sql = "INSERT INTO Usuarios (id, cpf, senha, email, idTipoUsuario) " +
                      "VALUES (seq_Usuarios.NEXTVAL, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql, new String[]{"ID"})) {
-            stmt.setString(1, usuario.getCPF());
+            stmt.setString(1, usuario.getCpf());
             stmt.setString(2, usuario.getSenha());
             stmt.setString(3, usuario.getEmail());
-            stmt.setInt(4, usuario.getTipoUsuario().getCodigo()); // Certifique-se que existe no banco
+            stmt.setInt(4, usuario.getTipoUsuario().getCodigo()); 
 
             int affectedRows = stmt.executeUpdate();
 
@@ -25,7 +26,6 @@ public class UsuarioDAO {
                 throw new SQLException("Falha ao inserir usuário, nenhuma linha afetada.");
             }
 
-            // Captura o ID gerado
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     return rs.getInt(1);
