@@ -1,1 +1,29 @@
-/build/
+# Ignorar o .classpath dentro do projeto
+BitPayBankStartup/.classpath
+
+# Ignorar as pastas de servidores (Eclipse)
+Servers/
+**/Servers/
+
+# Eclipse metadata
+.classpath
+.project
+.settings/
+
+# Arquivos de build
+bin/
+target/
+build/
+
+# Arquivos temporários
+*.log
+*.tmp
+
+# IntelliJ (caso use também)
+.idea/
+*.iml
+out/
+
+# Maven
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
