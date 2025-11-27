@@ -60,7 +60,7 @@
         <div class="row g-3">
             
             <div class="col-md-4">
-                <a href="transferencia-page" class="text-decoration-none">
+                <a href="transferencia" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-send-fill fs-1"></i>
                         <h5>Fazer Transferência</h5>
