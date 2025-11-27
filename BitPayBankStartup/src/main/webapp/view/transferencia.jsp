@@ -12,7 +12,7 @@
     }
     
     BigDecimal saldo = conta.getSaldo();
-    NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+    NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
     String saldoAtual = nf.format(saldo);
 %>
 
