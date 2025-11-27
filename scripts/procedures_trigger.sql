@@ -76,12 +76,12 @@ BEGIN
     -- 2. DÉBITO (TRANSFER-OUT) - INSERT 1
     -- Rastreamento: IDCONTA_DESTINO = ID da conta de destino
     INSERT INTO MOVIMENTACOES (id, idConta, valor, dataMovimento, idTipoMovimento, idContaDestino)
-    VALUES (seq_Movimentacoes.NEXTVAL, p_id_conta_origem, -ABS(p_valor), SYSDATE, 2, v_id_conta_destino); 
+    VALUES (seq_Movimentacoes.NEXTVAL, p_id_conta_origem, -ABS(p_valor), SYSDATE, 3, v_id_conta_destino); 
 
     -- 3. CRÉDITO (TRANSFER-IN) - INSERT 2
     -- Rastreamento: IDCONTA_DESTINO = ID da conta de origem (quem enviou)
     INSERT INTO MOVIMENTACOES (id, idConta, valor, dataMovimento, idTipoMovimento, idContaDestino)
-    VALUES (seq_Movimentacoes.NEXTVAL, v_id_conta_destino, ABS(p_valor), SYSDATE, 3, p_id_conta_origem); 
+    VALUES (seq_Movimentacoes.NEXTVAL, v_id_conta_destino, ABS(p_valor), SYSDATE, 4, p_id_conta_origem); 
 
     -- 4. CONFIRMAÇÃO (REQUISITO R6)
     COMMIT; 
