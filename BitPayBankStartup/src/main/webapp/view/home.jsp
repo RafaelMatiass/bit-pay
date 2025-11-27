@@ -78,10 +78,10 @@
             </div>
             
             <div class="col-md-4">
-                <a href="extrato-page" class="text-decoration-none">
+                <a href="extrato" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-receipt-cutoff fs-1"></i>
-                        <h5>Gerar Extrato</h5>
+                        <h5>Extrato</h5>
                     </div>
                 </a>
             </div>
