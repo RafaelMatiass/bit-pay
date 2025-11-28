@@ -2,12 +2,6 @@
 # PROJETO JAVA + ECLIPSE + TOMCAT (ESPECÍFICO)
 ##############################################
 
-# === Eclipse metadata ===
-.classpath
-.project
-.settings/
-.metadata/
-
 # === Arquivos do projeto ===
 # Ignorar .classpath dentro da pasta BitPayBankStartup (solução do seu erro)
 BitPayBankStartup/.classpath
