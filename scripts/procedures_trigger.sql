@@ -92,3 +92,101 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20008, 'Erro na transação de transferência: ' || SQLERRM);
 END;
 /
+
+-- =========================================
+-- Procedure: token
+-- =========================================
+
+CREATE OR REPLACE PROCEDURE PR_GERAR_TOKEN_RECUPERACAO (
+    p_email          IN  VARCHAR2,
+    p_token_gerado   OUT VARCHAR2
+)
+AS
+    v_id_usuario   NUMBER;
+    v_token        VARCHAR2(6);
+BEGIN
+    -- 1) Buscar usuário
+    SELECT ID INTO v_id_usuario
+    FROM USUARIOS
+    WHERE EMAIL = p_email;
+
+    -- 2) Gerar código de 6 dígitos
+    v_token := TO_CHAR(TRUNC(DBMS_RANDOM.VALUE(100000, 999999)));
+
+    -- 3) Registrar código
+    INSERT INTO RECUPERACAO_SENHA (
+        ID, ID_USUARIO, TOKEN, DATA_EXPIRACAO, USADO
+    ) VALUES (
+        SEQ_RECUP_SENHA.NEXTVAL,
+        v_id_usuario,
+        v_token,
+        SYSDATE + (10/1440), -- expira em 10 minutos
+        'N'
+    );
+
+    -- 4) Retornar código gerado
+    p_token_gerado := v_token;
+
+    COMMIT;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20010, 'E-mail não encontrado.');
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20011, 'Erro ao gerar código: ' || SQLERRM);
+END;
+/
+
+
+
+-- =========================================
+-- Procedure: Alterar senha
+-- =========================================
+
+CREATE OR REPLACE PROCEDURE PR_RECUPERAR_SENHA (
+    p_token    IN VARCHAR2,
+    p_senha    IN VARCHAR2
+)
+AS
+    v_id_usuario NUMBER;
+    v_exp        DATE;
+BEGIN
+    -- Validar token
+    SELECT ID_USUARIO, DATA_EXPIRACAO
+    INTO v_id_usuario, v_exp
+    FROM RECUPERACAO_SENHA
+    WHERE TRIM(TOKEN) = TRIM(p_token)
+      AND USADO = 'N';
+
+    -- Verificar expiração
+    IF v_exp < SYSDATE THEN
+        UPDATE RECUPERACAO_SENHA
+        SET USADO = 'S'
+        WHERE TRIM(TOKEN) = TRIM(p_token);
+
+        RAISE_APPLICATION_ERROR(-20012, 'Token expirado.');
+    END IF;
+
+    -- Atualizar senha
+    UPDATE USUARIOS
+    SET SENHA = p_senha
+    WHERE ID = v_id_usuario;
+
+    -- Marcar token como utilizado
+    UPDATE RECUPERACAO_SENHA
+    SET USADO = 'S'
+    WHERE TRIM(TOKEN) = TRIM(p_token);
+
+    COMMIT;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20013, 'Token inválido.');
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20014, 'Erro ao recuperar senha: ' || SQLERRM);
+END;
+/
