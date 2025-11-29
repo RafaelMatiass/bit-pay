@@ -227,6 +227,17 @@ CREATE TABLE ParcelasEmprestimos (
     idStatusParcela NUMBER(10) NOT NULL
 );  
 
+
+CREATE TABLE RECUPERACAO_SENHA (
+    ID              NUMBER PRIMARY KEY,
+    ID_USUARIO      NUMBER NOT NULL,
+    TOKEN           VARCHAR2(100) NOT NULL,
+    DATA_EXPIRACAO  DATE NOT NULL,
+    USADO           CHAR(1) DEFAULT 'N'
+);
+
+CREATE SEQUENCE SEQ_RECUP_SENHA;
+
 --============================================
 -- Alters Tables (FK)
 --============================================
