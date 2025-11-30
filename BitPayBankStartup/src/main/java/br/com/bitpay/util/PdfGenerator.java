@@ -50,10 +50,10 @@ public class PdfGenerator {
         // 2. CRIAÇÃO DA TABELA (6 COLUNAS)
         PdfPTable table = new PdfPTable(5);
         table.setWidthPercentage(100);
-        table.setWidths(new float[] {1.3f, 1.5f, 3.0f, 3.0f, 1.5f});
+        table.setWidths(new float[] {1.5f, 2.5f, 1.5f, 2.5f, 3.5f});
 
         // 3. CABEÇALHO DA TABELA
-        addTableHeader(table, "Data", "Nº Conta", "Nome Cliente", "Tipo", "Valor");
+        addTableHeader(table, "Data", "Tipo", "Valor", "Nº Conta", "Nome Cliente");
 
         // 4. CONTEÚDO DA TABELA
         for (Movimentacao mov : extrato) {
@@ -77,13 +77,22 @@ public class PdfGenerator {
     private static void addContentRow(PdfPTable table, Movimentacao mov) {
         // Coluna 1: Data
         table.addCell(createCell(mov.getDataMovimento().format(DATE_FORMAT), Element.ALIGN_CENTER, FONT_NORMAL));
+        
+        // Coluna 2: Tipo
+        table.addCell(createCell(mov.getTipoMovimento().getDescricao(), Element.ALIGN_LEFT, FONT_NORMAL));
+        
+        // Coluna 3: Valor (com cor)
+        boolean isDebit = mov.getTipoMovimento().name().contains("ENVIADA") || mov.getTipoMovimento().name().equals("SAQUE");
+        BaseColor color = isDebit ? new BaseColor(200, 0, 0) : new BaseColor(0, 150, 0); // Vermelho ou Verde
+        Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 10, color);
+        table.addCell(createCell(NF.format(mov.getValor()), Element.ALIGN_RIGHT, valueFont));
 
-        // Coluna 2: Conta Parceira
+        // Coluna 4: Conta Parceira
         String numeroConta = mov.getNumeroContaDestino();
         String contaDisplay = formatPartnerDisplay(mov.getTipoMovimento(), numeroConta, "Para: ", "De: ", "Externo");
         table.addCell(createCell(contaDisplay, Element.ALIGN_LEFT, FONT_NORMAL));
         
-        // Coluna 3: Nome Parceiro/Cliente
+        // Coluna 5: Nome Parceiro/Cliente
         String nome = mov.getNomeClienteDestino();
         String nomeDisplay = formatPartnerDisplay(mov.getTipoMovimento(), nome, "Para: ", "De: ", "Inválido");
         if (mov.getTipoMovimento() == TipoMovimento.DEPOSITO) {
@@ -92,15 +101,6 @@ public class PdfGenerator {
              nomeDisplay = "Caixa Eletrônico";
         }
         table.addCell(createCell(nomeDisplay, Element.ALIGN_LEFT, FONT_NORMAL));
-        
-        // Coluna 4: Tipo
-        table.addCell(createCell(mov.getTipoMovimento().getDescricao(), Element.ALIGN_LEFT, FONT_NORMAL));
-        
-        // Coluna 5: Valor (com cor)
-        boolean isDebit = mov.getTipoMovimento().name().contains("ENVIADA") || mov.getTipoMovimento().name().equals("SAQUE");
-        BaseColor color = isDebit ? new BaseColor(200, 0, 0) : new BaseColor(0, 150, 0); // Vermelho ou Verde
-        Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 10, color);
-        table.addCell(createCell(NF.format(mov.getValor()), Element.ALIGN_RIGHT, valueFont));
     }
     
     private static PdfPCell createCell(String content, int alignment, Font font) {
