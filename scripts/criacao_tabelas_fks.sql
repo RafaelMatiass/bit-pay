@@ -38,6 +38,11 @@ CREATE TABLE TiposInvestimento (
     rentabilidadeMes FLOAT NOT NULL,
     carenciaDias NUMBER(10) NOT NULL
 );
+ALTER TABLE TiposInvestimento
+ADD valorMinimo NUMBER (10,2) DEFAULT 0.00 NOT NULL;
+
+ALTER TABLE TiposInvestimento
+MODIFY rentabilidadeMes NUMBER (10,6);
 
 -- Tabela: TiposMovimento
 CREATE SEQUENCE seq_TiposMovimento
@@ -178,6 +183,8 @@ CREATE TABLE AplicacoesInvestimentos (
     idConta NUMBER(10) NOT NULL,
     idTipoInvestimento NUMBER(10) NOT NULL
 );
+ALTER TABLE AplicacoesInvestimentos
+ADD Status VARCHAR2(20) DEFAULT 'ATIVA';
 
 -- Tabela: Movimentacoes
 CREATE SEQUENCE seq_Movimentacoes 
@@ -193,7 +200,8 @@ CREATE TABLE Movimentacoes (
     idContaDestino NUMBER(10),
     idTipoMovimento NUMBER(10) NOT NULL
 );
-
+ALTER TABLE Movimentacoes
+ADD idContaDestino number (10);
 -- Tabela: Emprestimos
 CREATE SEQUENCE seq_Emprestimos
     START WITH 1 

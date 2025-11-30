@@ -28,17 +28,38 @@ END;
 CREATE OR REPLACE TRIGGER TRG_ATUALIZA_SALDO_CONTA
 AFTER INSERT ON MOVIMENTACOES
 FOR EACH ROW
+DECLARE
+    v_sinal NUMBER;
 BEGIN
-    -- Atualiza o saldo da conta relacionada
+    -- Define se é acréscimo (+1) ou decréscimo (-1) no saldo
+    CASE :NEW.IDTIPOMOVIMENTO
+        WHEN 1 THEN -- DEPOSITO
+            v_sinal := 1;
+        WHEN 2 THEN -- SAQUE
+            v_sinal := 1;
+        WHEN 3 THEN -- TRANSFERENCIA ENVIADA
+            v_sinal := 1;
+        WHEN 4 THEN -- TRANSFERENCIA RECEBIDA
+            v_sinal := 1;
+        WHEN 5 THEN -- INVESTIMENTO
+            v_sinal := -1;
+        ELSE
+            v_sinal := 0; -- Nenhuma alteração
+    END CASE;
+
+    -- Atualiza o saldo da conta
     UPDATE CONTAS
-    SET SALDO = SALDO +: NEW.VALOR
-    WHERE ID =: NEW.IDCONTA;
-    
+    SET SALDO = SALDO + (:NEW.VALOR * v_sinal)
+    WHERE ID = :NEW.IDCONTA;
+
 EXCEPTION
     WHEN OTHERS THEN
         RAISE_APPLICATION_ERROR(-20005, 'Erro no gatilho de saldo para a conta ' || :NEW.IDCONTA || ': ' || SQLERRM);
 END;
 /
+
+
+
 
 
 -- Controle de Transações (COMMIT/ROLLBACK)

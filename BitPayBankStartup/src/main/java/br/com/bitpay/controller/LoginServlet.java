@@ -26,6 +26,7 @@ public class LoginServlet extends HttpServlet {
         try {
             Cliente clienteLogado = loginService.autenticar(email, senha);
             
+            
             if (clienteLogado != null) {
                 HttpSession session = request.getSession();
                 

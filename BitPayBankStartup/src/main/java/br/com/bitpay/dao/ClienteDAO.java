@@ -2,17 +2,26 @@ package br.com.bitpay.dao;
 
 import br.com.bitpay.model.Cliente;
 import br.com.bitpay.model.Conta;
+import br.com.bitpay.model.Endereco;
+import br.com.bitpay.model.Telefone;
 import br.com.bitpay.model.Usuario;
 import br.com.bitpay.model.Enums.StatusConta;
 import br.com.bitpay.model.Enums.TipoUsuario;
+import br.com.bitpay.util.ConnectionFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 public class ClienteDAO {
 
+	private final EnderecoDAO enderecoDAO = new EnderecoDAO();
+    private final TelefoneDAO telefoneDAO = new TelefoneDAO();
+    private final UsuarioDAO usuarioDAO = new UsuarioDAO(); 
+    
     public int inserir(Connection conn, Cliente cliente) throws SQLException {
         String sql = "INSERT INTO Clientes (id, nome, dataNascimento, dataCadastro, idUsuario, idEndereco, idTelefone) " +
                      "VALUES (seq_Clientes.NEXTVAL, ?, ?, ?, ?, ?, ?)";
@@ -49,6 +58,53 @@ public class ClienteDAO {
                 }
             }
         }
+    }
+    
+public Cliente buscarClientePorId(int id) throws SQLException {
+        
+       
+        String sql = "SELECT c.nome, c.dataNascimento, c.dataCadastro, c.idUsuario, c.idUsuario, c.idEndereco, c.idTelefone  "
+        		+ "FROM Clientes c WHERE id = ?";
+
+      
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    
+                   
+                    int idUsuario = rs.getInt("idUsuario");
+                    int idEndereco = rs.getInt("idEndereco");
+                    int idTelefone = rs.getInt("idTelefone");
+                    
+                
+                    Endereco endereco = enderecoDAO.buscarEnderecoPorId(idEndereco);
+                    Telefone telefone = telefoneDAO.buscarTelefonePorId(idTelefone);
+                    Usuario usuario = usuarioDAO.buscarUsuarioPorId(idUsuario);
+                    
+                    
+                    
+              
+                    Cliente cliente = new Cliente(
+                        usuario.getId(),
+                        usuario.getCpf(),
+                        usuario.getSenha(),
+                        usuario.getEmail(),
+                        usuario.getTipoUsuario(),
+                        rs.getString("nome"),
+                        rs.getDate("dataNascimento").toLocalDate(),
+                        rs.getDate("dataCadastro").toLocalDate(),
+                        endereco,
+                        telefone);
+                    
+                    return cliente;
+                }
+            }
+        }
+        return null;
     }
     
 public Cliente buscarCliente(String email, String senha, Connection conn) throws SQLException {
@@ -102,4 +158,7 @@ public Cliente buscarCliente(String email, String senha, Connection conn) throws
         }
         return null; 
     }
+
+
+
 }

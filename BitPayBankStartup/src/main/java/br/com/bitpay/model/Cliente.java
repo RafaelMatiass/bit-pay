@@ -17,6 +17,24 @@ public class Cliente extends Usuario {
         super(); 
     }
     
+    public Cliente(int id,String cpf,
+            String senha, 
+            String email, 
+            TipoUsuario tipoUsuario,
+            String nome, 
+            LocalDate dataNascimento,
+            LocalDate dataCadastro, 
+            Endereco endereco, 
+            Telefone telefone
+            ) {
+        super(id,cpf, senha, email, tipoUsuario);
+        this.Nome = nome;
+        this.dataNascimento = dataNascimento;
+        this.dataCadastro = dataCadastro;
+        this.endereco = endereco;
+        this.telefone = telefone;
+    }
+    
     public Cliente(String cpf,
             String senha, 
             String email, 

@@ -12,6 +12,13 @@ public class Usuario {
 	
 	public Usuario() {
     }
+	public Usuario(int id ,String cpf, String senha, String email, TipoUsuario tipoUsuario) {
+		this.id = id;
+		this.Cpf = cpf;
+		this.Senha = senha;
+		this.Email = email;
+		this.tipoUsuario = tipoUsuario;		
+	}
 	
 	public Usuario(String cpf, String senha, String email, TipoUsuario tipoUsuario) {
 		this.Cpf = cpf;

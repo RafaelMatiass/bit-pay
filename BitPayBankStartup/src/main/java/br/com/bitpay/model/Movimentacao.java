@@ -16,6 +16,17 @@ public class Movimentacao {
 	private String numeroContaDestino; 
 	private String nomeClienteDestino;
 	
+	
+	
+	public Movimentacao(BigDecimal valor, int idConta, Integer idContaDestino, TipoMovimento tipoMovimento) {
+		
+		this.valor = valor;
+		this.dataMovimento = LocalDate.now();
+		this.idConta = idConta;
+		this.idContaDestino = idContaDestino;
+		this.tipoMovimento = tipoMovimento;
+	}
+
 	public Movimentacao() {}
 
 	public int getId() {

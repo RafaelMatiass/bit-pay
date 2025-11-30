@@ -17,6 +17,15 @@ public class Conta {
 	public Conta() {
 	}
 	
+	public Conta(int id, String numeroConta, BigDecimal saldo,  LocalDate dataAbertura, StatusConta statusConta, Cliente cliente) {
+		ContaId = id;
+		NumeroConta = numeroConta;
+		Saldo = saldo;
+		DataAbertura = dataAbertura;
+		this.statusConta = statusConta;
+		this.cliente = cliente;
+	}
+	
 	public Conta(String numeroConta, BigDecimal saldo,  LocalDate dataAbertura, StatusConta statusConta, Cliente cliente) {
 		NumeroConta = numeroConta;
 		Saldo = saldo;

@@ -1,6 +1,8 @@
 package br.com.bitpay.dao;
 
 import br.com.bitpay.model.Usuario;
+import br.com.bitpay.model.Enums.TipoUsuario;
+import br.com.bitpay.util.ConnectionFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -49,4 +51,36 @@ public class UsuarioDAO {
         }
         return false;
     }
+    
+    public Usuario buscarUsuarioPorId(int id) throws SQLException {
+
+        String sql = "SELECT id, cpf, senha, email, idTipoUsuario " +
+                     "FROM Usuarios WHERE id = ?";
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+
+                    Usuario usuario = new Usuario();
+                    usuario.setId(rs.getInt("id"));
+                    usuario.setCpf(rs.getString("cpf"));
+                    usuario.setSenha(rs.getString("senha"));
+                    usuario.setEmail(rs.getString("email"));
+
+                    int tipo = rs.getInt("idTipoUsuario");
+                    usuario.setTipoUsuario(TipoUsuario.getByCodigo(tipo));
+
+                    return usuario;
+                }
+            }
+        }
+
+        return null; 
+    }
+
+    
 }
