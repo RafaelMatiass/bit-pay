@@ -1,5 +1,6 @@
 package br.com.bitpay.controller;
 
+import br.com.bitpay.model.Cliente;
 import br.com.bitpay.model.Conta;
 import br.com.bitpay.service.DepositoService; 
 import br.com.bitpay.service.ContaService;
@@ -28,7 +29,9 @@ public class DepositoServlet extends HttpServlet {
         
         HttpSession session = request.getSession(false);
         
-        if (session == null || session.getAttribute("conta") == null) {
+        Object usuarioLogado = (session != null) ? session.getAttribute("usuarioLogado") : null;
+
+        if (usuarioLogado == null || !(usuarioLogado instanceof Cliente)) {
             response.sendRedirect("login"); 
             return;
         }
@@ -42,10 +45,12 @@ public class DepositoServlet extends HttpServlet {
         
         HttpSession session = request.getSession(false);
         
-        if (session == null || session.getAttribute("conta") == null) {
+        Object usuarioLogado = (session != null) ? session.getAttribute("usuarioLogado") : null;
+        
+        if (usuarioLogado == null || !(usuarioLogado instanceof Cliente)) {
             response.sendRedirect("login"); 
             return;
-        }
+        }        
         
         Conta contaLogada = (Conta) session.getAttribute("conta");
         

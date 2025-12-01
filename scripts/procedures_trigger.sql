@@ -190,3 +190,113 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20014, 'Erro ao recuperar senha: ' || SQLERRM);
 END;
 /
+
+-- PRODUCE PARA APROVAR CONTA 
+CREATE OR REPLACE PROCEDURE PR_APROVAR_CONTA (
+    p_id_conta IN NUMBER,
+    p_id_status_aprovado IN NUMBER 
+)
+AS
+    v_rows_updated NUMBER;
+BEGIN
+    -- Atualiza a conta, definindo o status para o valor aprovado.
+    UPDATE CONTAS
+    SET IDSTATUSCONTA = p_id_status_aprovado
+    WHERE ID = p_id_conta
+      AND IDSTATUSCONTA != p_id_status_aprovado; 
+      
+    v_rows_updated := SQL%ROWCOUNT;
+
+    -- Se nenhuma linha foi afetada, levanta um erro para ser tratado no Java.
+    IF v_rows_updated = 0 THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Aprovação falhou: Conta ID ' || p_id_conta || ' não encontrada ou já aprovada.');
+    END IF;
+    
+    COMMIT;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Erro inesperado na aprovação da conta: ' || SQLERRM);
+END;
+/
+
+-- 1. Definição das variáveis de entrada e do ID gerado
+DECLARE
+    v_id_usuario_gerado NUMBER;
+    v_nome_gerente      VARCHAR2(150) := 'Julia Moreira'; -- NOME DO GERENTE
+    v_email_gerente     VARCHAR2(150) := 'julia.gerente@bitpay.com'; -- EMAIL DE LOGIN
+    v_senha_gerente     VARCHAR2(50)  := 'gerente123'; -- SENHA DE LOGIN
+    v_data_nascimento   DATE          := DATE '1985-11-30'; -- DATA DE NASCIMENTO
+    c_tipo_gerente      CONSTANT NUMBER := 2; -- CÓDIGO DO ENUM TipoUsuario.GERENTE
+BEGIN
+    -- -----------------------------------------------------
+    -- PASSO 1: INSERIR NA TABELA USUARIOS (Login e Role)
+    -- -----------------------------------------------------
+    INSERT INTO USUARIOS (id, cpf, senha, email, idTipoUsuario)
+    VALUES (seq_Usuarios.NEXTVAL, '00011122233', v_senha_gerente, v_email_gerente, c_tipo_gerente)
+    -- CLÁUSULA RETURNING para obter o ID gerado (PK da tabela USUARIOS)
+    RETURNING id INTO v_id_usuario_gerado; 
+    
+    -- -----------------------------------------------------
+    -- PASSO 2: INSERIR NA TABELA GERENTES (Dados de Gerente)
+    -- -----------------------------------------------------
+    INSERT INTO GERENTES (id, nome, dataNascimento, idUsuario)
+    VALUES (seq_Gerentes.NEXTVAL, v_nome_gerente, v_data_nascimento, v_id_usuario_gerado);
+    
+    -- -----------------------------------------------------
+    -- PASSO 3: CONFIRMAR A TRANSAÇÃO
+    -- -----------------------------------------------------
+    COMMIT;
+    
+    DBMS_OUTPUT.PUT_LINE('Gerente ' || v_nome_gerente || ' inserido com sucesso. ID Usuario: ' || v_id_usuario_gerado);
+    
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('Erro ao inserir gerente: ' || SQLERRM);
+END;
+/
+
+-- INSERIR GERENTE
+DECLARE
+    v_id_usuario_gerado NUMBER;
+    v_nome_gerente      VARCHAR2(150) := 'Julia Moreira';
+    v_email_gerente     VARCHAR2(150) := 'julia.gerente@bitpay.com'; 
+    v_senha_gerente     VARCHAR2(50)  := 'gerente123'; 
+    v_data_nascimento   DATE          := DATE '1985-11-30'; 
+    c_tipo_gerente      CONSTANT NUMBER := 2;
+BEGIN
+
+    INSERT INTO USUARIOS (id, cpf, senha, email, idTipoUsuario)
+    VALUES (seq_Usuarios.NEXTVAL, '00011122233', v_senha_gerente, v_email_gerente, c_tipo_gerente)
+    RETURNING id INTO v_id_usuario_gerado; 
+    
+    -- -----------------------------------------------------
+    -- PASSO 2: INSERIR NA TABELA GERENTES (Dados de Gerente)
+    -- -----------------------------------------------------
+    INSERT INTO GERENTES (id, nome, dataNascimento, idUsuario)
+    VALUES (seq_Gerentes.NEXTVAL, v_nome_gerente, v_data_nascimento, v_id_usuario_gerado);
+    
+    -- -----------------------------------------------------
+    -- PASSO 3: CONFIRMAR A TRANSAÇÃO
+    -- -----------------------------------------------------
+    COMMIT;
+    
+    DBMS_OUTPUT.PUT_LINE('Gerente ' || v_nome_gerente || ' inserido com sucesso. ID Usuario: ' || v_id_usuario_gerado);
+    
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('Erro ao inserir gerente: ' || SQLERRM);
+END;
+/
+
+select * from usuarios;
+select * from clientes;
+select * from statusconta
+where id = 1;
+select * from gerentes;
+
+    julia.gerente@bitpay.com
+
+

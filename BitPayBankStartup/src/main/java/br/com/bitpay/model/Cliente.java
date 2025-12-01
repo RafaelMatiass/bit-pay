@@ -6,7 +6,7 @@ import br.com.bitpay.model.Enums.TipoUsuario;
 public class Cliente extends Usuario {
     
     private Conta conta;
-    
+    private int ClienteId;
     private String Nome;
     private LocalDate dataNascimento; 
     private LocalDate dataCadastro; 
@@ -33,6 +33,14 @@ public class Cliente extends Usuario {
         this.dataCadastro = dataCadastro;
         this.endereco = endereco;
         this.telefone = telefone;
+    }
+    
+    public int getClienteId() {
+        return ClienteId;
+    }
+
+    public void setClienteId(int clienteId) { 
+        this.ClienteId = clienteId;
     }
 
     public String getNome() {

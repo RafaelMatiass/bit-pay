@@ -50,7 +50,7 @@ public class PdfGenerator {
         // 2. CRIAÇÃO DA TABELA (6 COLUNAS)
         PdfPTable table = new PdfPTable(5);
         table.setWidthPercentage(100);
-        table.setWidths(new float[] {1.5f, 2.5f, 1.5f, 2.5f, 3.5f});
+        table.setWidths(new float[] {1.5f, 3.0f, 1.5f, 2.5f, 3.5f});
 
         // 3. CABEÇALHO DA TABELA
         addTableHeader(table, "Data", "Tipo", "Valor", "Nº Conta", "Nome Cliente");

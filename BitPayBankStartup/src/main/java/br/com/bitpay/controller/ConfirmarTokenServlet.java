@@ -27,7 +27,7 @@ public class ConfirmarTokenServlet extends HttpServlet {
             service.recuperarSenha(codigo, novaSenha);
 
             req.setAttribute("msg", "Senha alterada com sucesso!");
-            req.getRequestDispatcher("login.jsp").forward(req, resp);
+            req.getRequestDispatcher("index.jsp").forward(req, resp);
 
         } catch (Exception e) {
             req.setAttribute("erro", e.getMessage());

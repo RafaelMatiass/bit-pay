@@ -7,7 +7,7 @@ import oracle.jdbc.datasource.impl.OracleDataSource;
 public class ConnectionFactory {
 
   
-    private static final String StringConexao = "jdbc:oracle:thin:@localhost:1522/FREEPDB1"; 
+    private static final String StringConexao = "jdbc:oracle:thin:@localhost:1521/FREEPDB1"; 
     private static final String Usuario = "bitpay_schema";
     private static final String Senha = "senha123";
 

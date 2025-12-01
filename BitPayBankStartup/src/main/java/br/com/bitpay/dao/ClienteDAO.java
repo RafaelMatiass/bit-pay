@@ -1,6 +1,10 @@
 package br.com.bitpay.dao;
 
 import br.com.bitpay.model.Cliente;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import br.com.bitpay.model.Conta;
 import br.com.bitpay.model.Usuario;
 import br.com.bitpay.model.Enums.StatusConta;
@@ -51,48 +55,38 @@ public class ClienteDAO {
         }
     }
     
-public Cliente buscarCliente(String email, String senha, Connection conn) throws SQLException {
+    public Cliente buscarClientePorIdUsuario(int idUsuario, Connection conn) throws SQLException {
         
         String sql = 
-            "SELECT U.id AS U_ID, U.CPF, U.SENHA, U.EMAIL, U.IDTIPOUSUARIO, " +
-                   "C.ID AS C_ID, C.NOME, C.DATANASCIMENTO, C.DATACADASTRO, " +
-                   "CO.NUMEROCONTA, CO.SALDO, CO.ID AS CO_ID, CO.IDSTATUSCONTA " +
-            "FROM USUARIOS U " +
-            "INNER JOIN CLIENTES C ON U.id = C.idUsuario " + 
-            "INNER JOIN CONTAS CO ON C.ID = CO.ID " +    
-            "WHERE U.EMAIL = ? AND U.SENHA = ?";
+            """
+            SELECT 
+                C.ID AS C_ID, C.NOME, C.DATANASCIMENTO, C.DATACADASTRO, C.IDENDERECO, C.IDTELEFONE,
+                CO.NUMEROCONTA, CO.SALDO, CO.ID AS CO_ID, CO.IDSTATUSCONTA 
+            FROM CLIENTES C
+            LEFT JOIN CONTAS CO ON CO.IDCLIENTE = C.ID 
+            WHERE C.IDUSUARIO = ?
+            """;
             
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, email); 
-            stmt.setString(2, senha); 
+            stmt.setInt(1, idUsuario); 
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     
-                    Usuario usuario = new Usuario();
-                    usuario.setId(rs.getInt("U_ID"));
-                    usuario.setCpf(rs.getString("CPF"));
-                    usuario.setSenha(rs.getString("SENHA"));
-                    usuario.setEmail(rs.getString("EMAIL"));
+                    Cliente cliente = new Cliente();
                     
-                    int codigoTipo = rs.getInt("IDTIPOUSUARIO");
-                    usuario.setTipoUsuario(TipoUsuario.getByCodigo(codigoTipo));
+                    cliente.setClienteId(rs.getInt("C_ID"));
+                    cliente.setNome(rs.getString("NOME"));
+                    cliente.setDataNascimento(rs.getDate("DATANASCIMENTO").toLocalDate());
+                    cliente.setDataCadastro(rs.getDate("DATACADASTRO").toLocalDate());
                     
                     Conta conta = new Conta();
                     conta.setContaId(rs.getInt("CO_ID"));
                     conta.setNumeroConta(rs.getString("NUMEROCONTA"));
-                    
                     conta.setSaldo(rs.getBigDecimal("SALDO")); 
                     
                     int codigoStatus = rs.getInt("IDSTATUSCONTA");
                     conta.setStatusConta(StatusConta.getByCodigo(codigoStatus));
-                    
-                    Cliente cliente = new Cliente();
-                    cliente.setId(rs.getInt("C_ID"));
-                    cliente.setNome(rs.getString("NOME"));
-                    
-                    cliente.setDataNascimento(rs.getDate("DATANASCIMENTO").toLocalDate());
-                    cliente.setDataCadastro(rs.getDate("DATACADASTRO").toLocalDate());
                     
                     cliente.setConta(conta); 
                     
@@ -102,4 +96,57 @@ public Cliente buscarCliente(String email, String senha, Connection conn) throws
         }
         return null; 
     }
+
+	public List<Cliente> listarClientesPorStatus(int statusCodigo, Connection conn) throws SQLException {
+	    List<Cliente> clientes = new ArrayList<>();
+	    
+	    String sql = 
+	        "SELECT U.id AS U_ID, U.CPF, U.SENHA, U.EMAIL, U.IDTIPOUSUARIO, " +
+	               "C.ID AS C_ID, C.NOME, C.DATANASCIMENTO, C.DATACADASTRO, " +
+	               "CO.NUMEROCONTA, CO.SALDO, CO.ID AS CO_ID, CO.IDSTATUSCONTA " +
+	        "FROM CLIENTES C " +
+	        "INNER JOIN USUARIOS U ON C.idUsuario = U.id " +
+	        "INNER JOIN CONTAS CO ON CO.idCliente = C.ID " + 
+	        "WHERE CO.IDSTATUSCONTA = ?";
+	             
+	    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+	        stmt.setInt(1, statusCodigo); 
+	        
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            while (rs.next()) {
+	                
+	                Usuario usuario = new Usuario();
+	                usuario.setId(rs.getInt("U_ID"));
+	                usuario.setCpf(rs.getString("CPF"));
+	                usuario.setSenha(rs.getString("SENHA"));
+	                usuario.setEmail(rs.getString("EMAIL"));
+	                usuario.setTipoUsuario(TipoUsuario.getByCodigo(rs.getInt("IDTIPOUSUARIO")));
+	                
+	                Conta conta = new Conta();
+	                conta.setContaId(rs.getInt("CO_ID"));
+	                conta.setNumeroConta(rs.getString("NUMEROCONTA"));
+	                conta.setSaldo(rs.getBigDecimal("SALDO")); 
+	                conta.setStatusConta(StatusConta.getByCodigo(rs.getInt("IDSTATUSCONTA")));
+	                
+	                Cliente cliente = new Cliente();
+	                // Dados do Cliente
+	                cliente.setClienteId(rs.getInt("C_ID"));
+	                cliente.setNome(rs.getString("NOME"));
+	                
+	                cliente.setDataNascimento(rs.getDate("DATANASCIMENTO").toLocalDate());
+	                cliente.setDataCadastro(rs.getDate("DATACADASTRO").toLocalDate());
+	                
+	                cliente.setConta(conta); 
+	                cliente.setId(usuario.getId()); 
+	                cliente.setCpf(usuario.getCpf()); 
+	                cliente.setEmail(usuario.getEmail()); 
+	                cliente.setTipoUsuario(usuario.getTipoUsuario()); 
+	                
+	                clientes.add(cliente);
+	            }
+	        }
+	    }
+	    return clientes;
+	}
+
 }
