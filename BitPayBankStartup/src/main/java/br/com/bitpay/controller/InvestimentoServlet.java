@@ -29,7 +29,7 @@ public class InvestimentoServlet extends HttpServlet {
         HttpSession sessao = request.getSession(false);
         
        
-        if (sessao == null || sessao.getAttribute("cliente") == null || sessao.getAttribute("conta") == null) {
+        if (sessao == null || sessao.getAttribute("usuarioLogado") == null || sessao.getAttribute("conta") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
@@ -38,7 +38,7 @@ public class InvestimentoServlet extends HttpServlet {
         try {
         	
         	
-        	 Cliente clienteLogado = (Cliente) sessao.getAttribute("cliente");
+        	 Cliente clienteLogado = (Cliente) sessao.getAttribute("usuarioLogado");
              Conta contaLogada = (Conta) sessao.getAttribute("conta");
 
       
@@ -70,5 +70,5 @@ public class InvestimentoServlet extends HttpServlet {
         }
     }
     
-    // O método doPost será implementado no próximo passo (Aplicação)
+   
 }

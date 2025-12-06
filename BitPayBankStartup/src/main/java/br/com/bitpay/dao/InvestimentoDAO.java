@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,41 @@ public class InvestimentoDAO {
             rs.getInt("carenciaDias"),
             rs.getBigDecimal("valorMinimo")
         );
+    }
+    
+    private AplicacaoInvestimento mapearAplicacao(ResultSet rs) throws SQLException {
+       
+        TipoInvestimento tipo = this.buscarTipoInvestimentoPorId(rs.getInt("idTipoInvestimento"));
+
+        LocalDate dataAplicacao = rs.getDate("dataAplicacao").toLocalDate();
+        return new AplicacaoInvestimento(
+            rs.getInt("id"),
+            rs.getInt("idConta"),
+            tipo, 
+            rs.getBigDecimal("valorAplicado"),
+            dataAplicacao,
+            rs.getString("status")
+        );
+    }
+    
+    public List<AplicacaoInvestimento> listarAplicacoesPorConta(int idConta) throws SQLException {
+        List<AplicacaoInvestimento> aplicacoes = new ArrayList<>();
+        
+        String sql = "SELECT ap.ID, ap.IDCONTA, ap.IDTIPOINVESTIMENTO, ap.VALORAPLICADO, ap.DATAAPLICACAO, ap.STATUS " +
+                     "FROM AplicacoesInvestimentos ap WHERE ap.IDCONTA = ? AND ap.STATUS = 'ATIVA' ORDER BY ap.DATAAPLICACAO DESC";
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, idConta);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    aplicacoes.add(mapearAplicacao(rs));
+                }
+            }
+        }
+        return aplicacoes;
     }
 
     
@@ -61,6 +97,35 @@ public class InvestimentoDAO {
             }
         }
         return null;
+    }
+    
+    public AplicacaoInvestimento buscarAplicacaoPorId(Connection conn, int idAplicacao) throws SQLException {
+        String sql = "SELECT ID, IDCONTA, IDTIPOINVESTIMENTO, VALORAPLICADO, DATAAPLICACAO, STATUS FROM AplicacoesInvestimentos WHERE ID = ?";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, idAplicacao);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapearAplicacao(rs);
+                }
+            }
+        }
+        return null;
+    }
+    
+    
+    public void resgatarAplicacao(Connection conn, int idAplicacao) throws SQLException {
+        String sql = "UPDATE AplicacoesInvestimentos SET STATUS = 'RESGATADA' WHERE ID = ? AND STATUS = 'ATIVA'";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idAplicacao);
+            
+            if (stmt.executeUpdate() == 0) {
+                 throw new SQLException("Falha ao resgatar aplicação ou status já está RESGATADA.");
+            }
+        }
     }
 
     

@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
+import br.com.bitpay.model.Cliente;
 import br.com.bitpay.model.Conta;
 import br.com.bitpay.model.Movimentacao;
 import br.com.bitpay.service.ExtratoService;
@@ -29,7 +29,9 @@ public class ExtratoServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         Conta conta = (Conta) session.getAttribute("conta"); 
         
-        if (session == null || conta == null) {
+        Object usuarioLogado = (session != null) ? session.getAttribute("usuarioLogado") : null;
+
+        if (usuarioLogado == null || !(usuarioLogado instanceof Cliente)) {
             response.sendRedirect("login"); 
             return;
         }

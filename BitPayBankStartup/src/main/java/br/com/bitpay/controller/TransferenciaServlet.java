@@ -1,5 +1,6 @@
 package br.com.bitpay.controller;
 
+import br.com.bitpay.model.Cliente;
 import br.com.bitpay.model.Conta;
 import br.com.bitpay.service.TransferenciaService; 
 import br.com.bitpay.service.ContaService; 
@@ -27,7 +28,9 @@ public class TransferenciaServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("conta") == null) {
+        Object usuarioLogado = (session != null) ? session.getAttribute("usuarioLogado") : null;
+
+        if (usuarioLogado == null || !(usuarioLogado instanceof Cliente)) {
             response.sendRedirect("login"); 
             return;
         }
@@ -41,12 +44,14 @@ public class TransferenciaServlet extends HttpServlet {
         
         HttpSession session = request.getSession(false);
         
-        if (session == null || session.getAttribute("conta") == null) {
+        Object usuarioLogado = (session != null) ? session.getAttribute("usuarioLogado") : null;
+        
+        if (usuarioLogado == null || !(usuarioLogado instanceof Cliente)) {
             response.sendRedirect("login"); 
             return;
         }
         
-        Conta contaLogada = (Conta) session.getAttribute("conta");
+        Cliente clienteLogado = (Cliente) usuarioLogado;
         
         String valorStr = request.getParameter("valorTransferencia");
         String contaDestino = request.getParameter("contaDestino");
@@ -66,7 +71,7 @@ public class TransferenciaServlet extends HttpServlet {
                  throw new IllegalArgumentException("O valor da transferência deve ser positivo.");
             }
             
-            int idContaOrigem = contaLogada.getContaId(); 
+            int idContaOrigem = clienteLogado.getConta().getContaId(); 
             transferenciaService.realizarTransferencia(idContaOrigem, contaDestino, valor);
             
             Conta contaAtualizada = contaService.buscarContaAtualizada(idContaOrigem);

@@ -5,18 +5,26 @@
 <%@ page import="java.text.NumberFormat, java.util.Locale" %>
 
 <%
+    Object usuarioLogado = session.getAttribute("usuarioLogado");
 
-    Cliente cliente = (Cliente) session.getAttribute("cliente");
-    Conta conta = (Conta) session.getAttribute("conta");
-
-    if (cliente == null || conta == null) {
-        response.sendRedirect("login"); 
+    if (usuarioLogado == null || !(usuarioLogado instanceof Cliente)) {
+        response.sendRedirect(request.getContextPath() + "/index.jsp"); 
         return;
     }
+    
+    Cliente cliente = (Cliente) usuarioLogado;
+    
+    Conta conta = cliente.getConta();
+
+    if (conta == null) {
+        response.sendRedirect(request.getContextPath() + "/login"); 
+        return;
+    }
+
     String nomeUsuario = cliente.getNome();
     BigDecimal saldoConta = conta.getSaldo(); 
     
-    NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+    NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
     String saldoFormatado = nf.format(saldoConta); 
 %>
 
@@ -91,6 +99,15 @@
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-graph-up-arrow fs-1"></i>
                         <h5>Investimentos</h5>
+                    </div>
+                </a>
+            </div>
+            
+              <div class="col-md-4">
+                <a href="meus-investimentos" class="text-decoration-none">
+                    <div class="card p-3 text-center h-100">
+                        <i class="bi bi-boxes fs-1"></i>
+                        <h5>Meus Investimentos</h5>
                     </div>
                 </a>
             </div>

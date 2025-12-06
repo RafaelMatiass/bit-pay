@@ -1,40 +1,67 @@
 package br.com.bitpay.service;
 
 import br.com.bitpay.dao.ClienteDAO;
+import br.com.bitpay.dao.GerenteDAO;
+import br.com.bitpay.dao.UsuarioDAO;
+
 import br.com.bitpay.model.Cliente;
+import br.com.bitpay.model.Gerente;
+import br.com.bitpay.model.Usuario;
 import br.com.bitpay.util.ConnectionFactory;
-import br.com.bitpay.model.Enums.StatusConta; 
+import br.com.bitpay.model.Enums.TipoUsuario;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 public class LoginService {
 
-    private ClienteDAO clienteDAO = new ClienteDAO(); 
+	private UsuarioDAO usuarioDAO = new UsuarioDAO();
+    private ClienteDAO clienteDAO = new ClienteDAO();
+    private GerenteDAO gerenteDAO = new GerenteDAO();
 
-    public Cliente autenticar(String email, String senha) throws Exception {
-        Connection conn = null;
-        try {
-            conn = ConnectionFactory.getConnection();
+public Usuario autenticar(String email, String senha) throws Exception {
+        
+        try (Connection conn = ConnectionFactory.getConnection()) {
             
-            Cliente clienteLogado = clienteDAO.buscarCliente(email, senha, conn);
+            Usuario baseUser = usuarioDAO.buscarUsuarioBase(email, senha, conn);
             
-            if (clienteLogado == null) {
-                throw new Exception("Email ou Senha inválidos."); 
+            if (baseUser == null) {
+                throw new Exception("Email ou senha inválidos.");
             }
             
-            StatusConta statusAtual = clienteLogado.getConta().getStatusConta();
-            
-            if (statusAtual != StatusConta.PENDENTE && statusAtual != StatusConta.ATIVA) {
-                throw new Exception("Sua conta está no status " + statusAtual.getDescricao() + " e não pode ser acessada. Contate o suporte.");
-            }
-            
-            return clienteLogado;
+            if (baseUser.getTipoUsuario() == TipoUsuario.CLIENTE) {
+                
+                Cliente cliente = clienteDAO.buscarClientePorIdUsuario(baseUser.getId(), conn);
+                
+                if (cliente != null) {
+                    copiarDadosBase(baseUser, cliente);
+                    return cliente;
+                } else {
+                    throw new Exception("Dados de cliente incompletos ou não encontrados.");
+                }
+                
+            } else if (baseUser.getTipoUsuario() == TipoUsuario.GERENTE) {
+                
+                Gerente gerente = gerenteDAO.buscarGerentePorIdUsuario(baseUser.getId(), conn);
 
-        } catch (SQLException e) {
-            throw new Exception("Erro de conexão ou consulta ao banco: " + e.getMessage(), e);
-        } finally {
-            conn.close();
+                if (gerente != null) {
+                    copiarDadosBase(baseUser, gerente);
+                    return gerente;
+                } else {
+                    throw new Exception("Dados de gerente incompletos ou não encontrados.");
+                }
+
+            } else {
+                throw new Exception("Perfil de usuário inválido.");
+            }
         }
     }
+    
+    private void copiarDadosBase(Usuario origem, Usuario destino) {
+        destino.setId(origem.getId());
+        destino.setCpf(origem.getCpf());
+        destino.setEmail(origem.getEmail());
+        destino.setSenha(origem.getSenha());
+        destino.setTipoUsuario(origem.getTipoUsuario());
+    }
+	
 }
