@@ -4,6 +4,11 @@ import java.util.Properties;
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
 
+
+import java.util.Properties;
+import jakarta.mail.*;
+import jakarta.mail.internet.*;
+
 public class EmailService {
 
     private static final String USER = "seuemail@gmail.com";
@@ -37,4 +42,8 @@ public class EmailService {
             e.printStackTrace();
         }
     }
+
 }
+
+
+

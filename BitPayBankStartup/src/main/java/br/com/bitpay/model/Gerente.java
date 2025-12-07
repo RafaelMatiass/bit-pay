@@ -12,4 +12,7 @@ public class Gerente extends Usuario {
 
     public LocalDate getDataNascimento() { return dataNascimento; }
     public void setDataNascimento(LocalDate dataNascimento) { this.dataNascimento = dataNascimento; }
+
 }
+
+

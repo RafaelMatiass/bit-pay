@@ -95,10 +95,19 @@
             </div>
 
             <div class="col-md-4">
-                <a href="investimentos-page" class="text-decoration-none">
+                <a href="investimentos" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-graph-up-arrow fs-1"></i>
                         <h5>Investimentos</h5>
+                    </div>
+                </a>
+            </div>
+            
+              <div class="col-md-4">
+                <a href="meus-investimentos" class="text-decoration-none">
+                    <div class="card p-3 text-center h-100">
+                        <i class="bi bi-boxes fs-1"></i>
+                        <h5>Meus Investimentos</h5>
                     </div>
                 </a>
             </div>

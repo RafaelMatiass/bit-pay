@@ -1,22 +1,29 @@
 package br.com.bitpay.dao;
 
 import br.com.bitpay.model.Cliente;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import br.com.bitpay.model.Conta;
+import br.com.bitpay.model.Endereco;
+import br.com.bitpay.model.Telefone;
 import br.com.bitpay.model.Usuario;
 import br.com.bitpay.model.Enums.StatusConta;
 import br.com.bitpay.model.Enums.TipoUsuario;
+import br.com.bitpay.util.ConnectionFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+
 
 public class ClienteDAO {
 
+	private final EnderecoDAO enderecoDAO = new EnderecoDAO();
+    private final TelefoneDAO telefoneDAO = new TelefoneDAO();
+    private final UsuarioDAO usuarioDAO = new UsuarioDAO(); 
+    
     public int inserir(Connection conn, Cliente cliente) throws SQLException {
         String sql = "INSERT INTO Clientes (id, nome, dataNascimento, dataCadastro, idUsuario, idEndereco, idTelefone) " +
                      "VALUES (seq_Clientes.NEXTVAL, ?, ?, ?, ?, ?, ?)";
@@ -55,98 +62,147 @@ public class ClienteDAO {
         }
     }
     
-    public Cliente buscarClientePorIdUsuario(int idUsuario, Connection conn) throws SQLException {
+public Cliente buscarClientePorId(int id) throws SQLException {
         
-        String sql = 
-            """
-            SELECT 
-                C.ID AS C_ID, C.NOME, C.DATANASCIMENTO, C.DATACADASTRO, C.IDENDERECO, C.IDTELEFONE,
-                CO.NUMEROCONTA, CO.SALDO, CO.ID AS CO_ID, CO.IDSTATUSCONTA 
-            FROM CLIENTES C
-            LEFT JOIN CONTAS CO ON CO.IDCLIENTE = C.ID 
-            WHERE C.IDUSUARIO = ?
-            """;
-            
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, idUsuario); 
+       
+        String sql = "SELECT c.nome, c.dataNascimento, c.dataCadastro, c.idUsuario, c.idUsuario, c.idEndereco, c.idTelefone  "
+        		+ "FROM Clientes c WHERE id = ?";
+
+      
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     
-                    Cliente cliente = new Cliente();
+                   
+                    int idUsuario = rs.getInt("idUsuario");
+                    int idEndereco = rs.getInt("idEndereco");
+                    int idTelefone = rs.getInt("idTelefone");
                     
-                    cliente.setClienteId(rs.getInt("C_ID"));
-                    cliente.setNome(rs.getString("NOME"));
-                    cliente.setDataNascimento(rs.getDate("DATANASCIMENTO").toLocalDate());
-                    cliente.setDataCadastro(rs.getDate("DATACADASTRO").toLocalDate());
+                
+                    Endereco endereco = enderecoDAO.buscarEnderecoPorId(idEndereco);
+                    Telefone telefone = telefoneDAO.buscarTelefonePorId(idTelefone);
+                    Usuario usuario = usuarioDAO.buscarUsuarioPorId(idUsuario);
                     
-                    Conta conta = new Conta();
-                    conta.setContaId(rs.getInt("CO_ID"));
-                    conta.setNumeroConta(rs.getString("NUMEROCONTA"));
-                    conta.setSaldo(rs.getBigDecimal("SALDO")); 
                     
-                    int codigoStatus = rs.getInt("IDSTATUSCONTA");
-                    conta.setStatusConta(StatusConta.getByCodigo(codigoStatus));
                     
-                    cliente.setConta(conta); 
+              
+                    Cliente cliente = new Cliente(
+                        usuario.getId(),
+                        usuario.getCpf(),
+                        usuario.getSenha(),
+                        usuario.getEmail(),
+                        usuario.getTipoUsuario(),
+                        rs.getString("nome"),
+                        rs.getDate("dataNascimento").toLocalDate(),
+                        rs.getDate("dataCadastro").toLocalDate(),
+                        endereco,
+                        telefone);
                     
                     return cliente;
                 }
             }
         }
-        return null; 
+        return null;
     }
+    
+public Cliente buscarClientePorIdUsuario(int idUsuario, Connection conn) throws SQLException {
+    
+    String sql = 
+        """
+        SELECT 
+            C.ID AS C_ID, C.NOME, C.DATANASCIMENTO, C.DATACADASTRO, C.IDENDERECO, C.IDTELEFONE,
+            CO.NUMEROCONTA, CO.SALDO, CO.ID AS CO_ID, CO.IDSTATUSCONTA 
+        FROM CLIENTES C
+        LEFT JOIN CONTAS CO ON CO.IDCLIENTE = C.ID 
+        WHERE C.IDUSUARIO = ?
+        """;
+        
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, idUsuario); 
 
-	public List<Cliente> listarClientesPorStatus(int statusCodigo, Connection conn) throws SQLException {
-	    List<Cliente> clientes = new ArrayList<>();
-	    
-	    String sql = 
-	        "SELECT U.id AS U_ID, U.CPF, U.SENHA, U.EMAIL, U.IDTIPOUSUARIO, " +
-	               "C.ID AS C_ID, C.NOME, C.DATANASCIMENTO, C.DATACADASTRO, " +
-	               "CO.NUMEROCONTA, CO.SALDO, CO.ID AS CO_ID, CO.IDSTATUSCONTA " +
-	        "FROM CLIENTES C " +
-	        "INNER JOIN USUARIOS U ON C.idUsuario = U.id " +
-	        "INNER JOIN CONTAS CO ON CO.idCliente = C.ID " + 
-	        "WHERE CO.IDSTATUSCONTA = ?";
-	             
-	    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-	        stmt.setInt(1, statusCodigo); 
-	        
-	        try (ResultSet rs = stmt.executeQuery()) {
-	            while (rs.next()) {
-	                
-	                Usuario usuario = new Usuario();
-	                usuario.setId(rs.getInt("U_ID"));
-	                usuario.setCpf(rs.getString("CPF"));
-	                usuario.setSenha(rs.getString("SENHA"));
-	                usuario.setEmail(rs.getString("EMAIL"));
-	                usuario.setTipoUsuario(TipoUsuario.getByCodigo(rs.getInt("IDTIPOUSUARIO")));
-	                
-	                Conta conta = new Conta();
-	                conta.setContaId(rs.getInt("CO_ID"));
-	                conta.setNumeroConta(rs.getString("NUMEROCONTA"));
-	                conta.setSaldo(rs.getBigDecimal("SALDO")); 
-	                conta.setStatusConta(StatusConta.getByCodigo(rs.getInt("IDSTATUSCONTA")));
-	                
-	                Cliente cliente = new Cliente();
-	                // Dados do Cliente
-	                cliente.setClienteId(rs.getInt("C_ID"));
-	                cliente.setNome(rs.getString("NOME"));
-	                
-	                cliente.setDataNascimento(rs.getDate("DATANASCIMENTO").toLocalDate());
-	                cliente.setDataCadastro(rs.getDate("DATACADASTRO").toLocalDate());
-	                
-	                cliente.setConta(conta); 
-	                cliente.setId(usuario.getId()); 
-	                cliente.setCpf(usuario.getCpf()); 
-	                cliente.setEmail(usuario.getEmail()); 
-	                cliente.setTipoUsuario(usuario.getTipoUsuario()); 
-	                
-	                clientes.add(cliente);
-	            }
-	        }
-	    }
-	    return clientes;
-	}
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                
+                Cliente cliente = new Cliente();
+                
+                cliente.setClienteId(rs.getInt("C_ID"));
+                cliente.setNome(rs.getString("NOME"));
+                cliente.setDataNascimento(rs.getDate("DATANASCIMENTO").toLocalDate());
+                cliente.setDataCadastro(rs.getDate("DATACADASTRO").toLocalDate());
+                
+                Conta conta = new Conta();
+                conta.setContaId(rs.getInt("CO_ID"));
+                conta.setNumeroConta(rs.getString("NUMEROCONTA"));
+                conta.setSaldo(rs.getBigDecimal("SALDO")); 
+                
+                int codigoStatus = rs.getInt("IDSTATUSCONTA");
+                conta.setStatusConta(StatusConta.getByCodigo(codigoStatus));
+                
+                cliente.setConta(conta); 
+                
+                return cliente;
+            }
+        }
+    }
+    return null; 
+}
+
+public List<Cliente> listarClientesPorStatus(int statusCodigo, Connection conn) throws SQLException {
+    List<Cliente> clientes = new ArrayList<>();
+    
+    String sql = 
+        "SELECT U.id AS U_ID, U.CPF, U.SENHA, U.EMAIL, U.IDTIPOUSUARIO, " +
+               "C.ID AS C_ID, C.NOME, C.DATANASCIMENTO, C.DATACADASTRO, " +
+               "CO.NUMEROCONTA, CO.SALDO, CO.ID AS CO_ID, CO.IDSTATUSCONTA " +
+        "FROM CLIENTES C " +
+        "INNER JOIN USUARIOS U ON C.idUsuario = U.id " +
+        "INNER JOIN CONTAS CO ON CO.idCliente = C.ID " + 
+        "WHERE CO.IDSTATUSCONTA = ?";
+             
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, statusCodigo); 
+        
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                
+                Usuario usuario = new Usuario();
+                usuario.setId(rs.getInt("U_ID"));
+                usuario.setCpf(rs.getString("CPF"));
+                usuario.setSenha(rs.getString("SENHA"));
+                usuario.setEmail(rs.getString("EMAIL"));
+                usuario.setTipoUsuario(TipoUsuario.getByCodigo(rs.getInt("IDTIPOUSUARIO")));
+                
+                Conta conta = new Conta();
+                conta.setContaId(rs.getInt("CO_ID"));
+                conta.setNumeroConta(rs.getString("NUMEROCONTA"));
+                conta.setSaldo(rs.getBigDecimal("SALDO")); 
+                conta.setStatusConta(StatusConta.getByCodigo(rs.getInt("IDSTATUSCONTA")));
+                
+                Cliente cliente = new Cliente();
+                // Dados do Cliente
+                cliente.setClienteId(rs.getInt("C_ID"));
+                cliente.setNome(rs.getString("NOME"));
+                
+                cliente.setDataNascimento(rs.getDate("DATANASCIMENTO").toLocalDate());
+                cliente.setDataCadastro(rs.getDate("DATACADASTRO").toLocalDate());
+                
+                cliente.setConta(conta); 
+                cliente.setId(usuario.getId()); 
+                cliente.setCpf(usuario.getCpf()); 
+                cliente.setEmail(usuario.getEmail()); 
+                cliente.setTipoUsuario(usuario.getTipoUsuario()); 
+                
+                clientes.add(cliente);
+            }
+        }
+    }
+    return clientes;
+}
+
+
 
 }

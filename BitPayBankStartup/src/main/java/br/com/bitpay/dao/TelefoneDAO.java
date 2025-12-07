@@ -1,12 +1,24 @@
 package br.com.bitpay.dao;
 
 import br.com.bitpay.model.Telefone;
+import br.com.bitpay.util.ConnectionFactory;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class TelefoneDAO {
+	
+	 private Telefone mapearTelefone(ResultSet rs) throws SQLException {
+	        Telefone telefone = new Telefone(
+	            rs.getInt("CODPais"),
+	            rs.getInt("CODArea"),
+	            rs.getLong("NUMERO")
+	        );
+	        telefone.setId(rs.getInt("ID"));
+	        return telefone;
+	    }
 
     public int inserirTelefone(Connection conn, Telefone telefone) throws SQLException {
         String sql = "INSERT INTO Telefones (id, codPais, codArea, numero) " +
@@ -32,5 +44,21 @@ public class TelefoneDAO {
                 }
             }
         }
+    }
+    public Telefone buscarTelefonePorId(int id) throws SQLException {
+        String sql = "SELECT id, codPais, codArea, numero FROM Telefones WHERE id = ?";
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapearTelefone(rs);
+                }
+            }
+        }
+        return null;
     }
 }
