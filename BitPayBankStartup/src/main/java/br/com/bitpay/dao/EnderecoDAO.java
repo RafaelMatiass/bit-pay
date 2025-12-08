@@ -1,73 +1,79 @@
 package br.com.bitpay.dao;
 
-import br.com.bitpay.model.Endereco;
-import br.com.bitpay.util.ConnectionFactory;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import br.com.bitpay.model.Endereco;
+
 public class EnderecoDAO {
-	
-	private Endereco mapearEndereco(ResultSet rs) throws SQLException {
-        Endereco endereco = new Endereco(
-            rs.getString("LOGRADOURO"),
-            rs.getInt("NUMERO"),
-            rs.getString("BAIRRO"),
-            rs.getString("CIDADE"),
-            rs.getString("ESTADO"),
-            rs.getString("CEP")
-        );
-        endereco.setId(rs.getInt("ID"));
-        return endereco;
-    }
-	
-    public int inserirEndereco(Connection conn, Endereco endereco) throws SQLException {
-        String sql = "INSERT INTO Enderecos (id, logradouro, numero, bairro, cidade, estado, cep) " +
-                     "VALUES (seq_Enderecos.NEXTVAL, ?, ?, ?, ?, ?, ?)";
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql, new String[]{"ID"})) {
-            stmt.setString(1, endereco.getLogradouro());
-            stmt.setInt(2, endereco.getNumero());
-            stmt.setString(3, endereco.getBairro());
-            stmt.setString(4, endereco.getCidade());
-            stmt.setString(5, endereco.getEstado());
-            stmt.setString(6, endereco.getCep());
-
-            int affectedRows = stmt.executeUpdate();
-            if (affectedRows == 0) {
-                throw new SQLException("Falha ao inserir endereço, nenhuma linha afetada.");
-            }
-
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    int idGerado = rs.getInt(1);
-                    endereco.setId(idGerado);
-                    return idGerado;
-                } else {
-                    throw new SQLException("Falha ao obter ID gerado do endereço.");
-                }
-            }
-        }
-    }
-    
     public Endereco buscarEnderecoPorId(int id) throws SQLException {
-        String sql = "SELECT id, logradouro, numero, bairro, cidade, estado, cep FROM Enderecos WHERE id = ?";
-
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, id);
-
-            try (ResultSet rs = stmt.executeQuery()) {
+        String sql = "SELECT id, logradouro, numero, complemento, bairro, cidade, estado, cep FROM Enderecos WHERE id = ?";
+        try (Connection conn = br.com.bitpay.util.ConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    
-                    return mapearEndereco(rs);
+                    Endereco e = new Endereco();
+                    e.setId(rs.getInt("id"));
+                    e.setLogradouro(rs.getString("logradouro"));
+                    e.setNumero(rs.getInt("numero"));
+                    e.setComplemento(rs.getString("complemento"));
+                    e.setBairro(rs.getString("bairro"));
+                    e.setCidade(rs.getString("cidade"));
+                    e.setEstado(rs.getString("estado"));
+                    e.setCep(rs.getString("cep"));
+                    return e;
                 }
             }
         }
         return null;
     }
-    
+
+    public int inserirEndereco(Connection conn, Endereco endereco) throws SQLException {
+        String sql = "INSERT INTO Enderecos (id, logradouro, numero, complemento, bairro, cidade, estado, cep) " +
+                     "VALUES (seq_Enderecos.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql, new String[]{"ID"})) {
+            ps.setString(1, endereco.getLogradouro());
+            ps.setInt(2, endereco.getNumero());
+            ps.setString(3, endereco.getComplemento());
+            ps.setString(4, endereco.getBairro());
+            ps.setString(5, endereco.getCidade());
+            ps.setString(6, endereco.getEstado());
+            ps.setString(7, endereco.getCep());
+            int affected = ps.executeUpdate();
+            if (affected == 0) throw new SQLException("Falha ao inserir endereço.");
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    int id = keys.getInt(1);
+                    endereco.setId(id);
+                    return id;
+                }
+            }
+        }
+        throw new SQLException("Não foi possível obter ID do endereço inserido.");
+    }
+
+    public boolean atualizarEndereco(Connection conn, Endereco endereco) throws SQLException {
+        // Se o endereço não tem id, faz insert e atualiza o objeto (retorna true)
+        if (endereco.getId() == 0) {
+            int novoId = inserirEndereco(conn, endereco);
+            return novoId > 0;
+        }
+
+        String sql = "UPDATE Enderecos SET logradouro = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, estado = ?, cep = ? WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, endereco.getLogradouro());
+            ps.setInt(2, endereco.getNumero());
+            ps.setString(3, endereco.getComplemento());
+            ps.setString(4, endereco.getBairro());
+            ps.setString(5, endereco.getCidade());
+            ps.setString(6, endereco.getEstado());
+            ps.setString(7, endereco.getCep());
+            ps.setInt(8, endereco.getId());
+            return ps.executeUpdate() > 0;
+        }
+    }
 }

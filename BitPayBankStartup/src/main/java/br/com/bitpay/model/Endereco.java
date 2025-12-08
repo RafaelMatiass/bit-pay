@@ -2,6 +2,8 @@ package br.com.bitpay.model;
 
 
 public class Endereco {
+	
+	public Endereco() {}
     
    
     private int id;

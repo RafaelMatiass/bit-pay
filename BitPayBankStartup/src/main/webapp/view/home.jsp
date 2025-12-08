@@ -1,3 +1,4 @@
+<!-- Updated JSP home page with login modal added -->
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="br.com.bitpay.model.Cliente" %>
 <%@ page import="br.com.bitpay.model.Conta" %>
@@ -13,7 +14,6 @@
     }
     
     Cliente cliente = (Cliente) usuarioLogado;
-    
     Conta conta = cliente.getConta();
 
     if (conta == null) {
@@ -23,9 +23,9 @@
 
     String nomeUsuario = cliente.getNome();
     BigDecimal saldoConta = conta.getSaldo(); 
-    
+
     NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
-    String saldoFormatado = nf.format(saldoConta); 
+    String saldoFormatado = nf.format(saldoConta);
 %>
 
 <!DOCTYPE html>
@@ -50,7 +50,10 @@
               </span>
             </li>
             <li class="nav-item ms-3">
-              <a href="logout" class="btn btn-outline-light btn-sm">Sair</a>
+              <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalLogin">Login</button>
+            </li>
+            <li class="nav-item ms-3">
+              <a href="logout" class="btn btn-outline-danger btn-sm">Sair</a>
             </li>
           </ul>
         </div>
@@ -63,10 +66,9 @@
     </header>
 
     <main class="container mt-4">
-        <h3 classV="mb-3">O que você deseja fazer?</h3>
+        <h3 class="mb-3">O que você deseja fazer?</h3>
         
         <div class="row g-3">
-            
             <div class="col-md-4">
                 <a href="transferencia" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
@@ -76,7 +78,7 @@
                 </a>
             </div>
 
- 			<div class="col-md-4">
+            <div class="col-md-4">
                 <a href="deposito" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-cash-stack fs-1"></i>
@@ -122,7 +124,7 @@
             </div>
 
             <div class="col-md-4">
-                <a href="meus-dados-page" class="text-decoration-none">
+                <a href="meus-dados" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-person-fill fs-1"></i>
                         <h5>Meus Dados Pessoais</h5>
@@ -133,5 +135,43 @@
         </div>
     </main>
 
+
+<!-- MODAL LOGIN -->
+<div class="modal fade" id="modalLogin" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-primary">Acessar Conta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <form action="login" method="POST">
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="senha" class="form-label">Senha</label>
+                <input type="password" id="senha" name="senha" class="form-control" required>
+            </div>
+
+            <div class="d-grid mt-3">
+                <button class="btn btn-primary" type="submit">Entrar</button>
+            </div>
+
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

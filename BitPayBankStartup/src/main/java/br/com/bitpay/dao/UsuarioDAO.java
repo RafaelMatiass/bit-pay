@@ -1,26 +1,26 @@
 package br.com.bitpay.dao;
 
-import br.com.bitpay.model.Usuario;
-import br.com.bitpay.model.Enums.TipoUsuario;
-import br.com.bitpay.util.ConnectionFactory;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import br.com.bitpay.model.Usuario;
+import br.com.bitpay.model.Enums.TipoUsuario;
+import br.com.bitpay.util.ConnectionFactory;
+
 public class UsuarioDAO {
 
     public int inserir(Connection conn, Usuario usuario) throws SQLException {
 
-    	String sql = "INSERT INTO Usuarios (id, cpf, senha, email, idTipoUsuario) " +
-                     "VALUES (seq_Usuarios.NEXTVAL, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Usuarios (id, cpf, senha, email, idTipoUsuario) " +
+                "VALUES (seq_Usuarios.NEXTVAL, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql, new String[]{"ID"})) {
             stmt.setString(1, usuario.getCpf());
             stmt.setString(2, usuario.getSenha());
             stmt.setString(3, usuario.getEmail());
-            stmt.setInt(4, usuario.getTipoUsuario().getCodigo()); 
+            stmt.setInt(4, usuario.getTipoUsuario().getCodigo());
 
             int affectedRows = stmt.executeUpdate();
 
@@ -51,11 +51,11 @@ public class UsuarioDAO {
         }
         return false;
     }
-    
+
     public Usuario buscarUsuarioPorId(int id) throws SQLException {
 
         String sql = "SELECT id, cpf, senha, email, idTipoUsuario " +
-                     "FROM Usuarios WHERE id = ?";
+                "FROM Usuarios WHERE id = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -79,8 +79,9 @@ public class UsuarioDAO {
             }
         }
 
-        return null; 
+        return null;
     }
+
     public Usuario buscarUsuarioBase(String email, String senha, Connection conn) throws SQLException {
 
         String sql = """
@@ -105,9 +106,9 @@ public class UsuarioDAO {
                 u.setId(rs.getInt("id"));
                 u.setCpf(rs.getString("cpf"));
                 u.setEmail(rs.getString("email"));
-                
+
                 int idTipoUsuario = rs.getInt("idTipoUsuario");
-                u.setTipoUsuario(TipoUsuario.getByCodigo(idTipoUsuario)); 
+                u.setTipoUsuario(TipoUsuario.getByCodigo(idTipoUsuario));
                 return u;
             }
         }
@@ -115,5 +116,41 @@ public class UsuarioDAO {
         return null;
     }
 
-    
+    // ============================================================
+    //  MÉTODOS NOVOS (ESSENCIAIS PARA O MEUS DADOS FUNCIONAR)
+    // ============================================================
+
+    /**
+     * Atualiza somente o email
+     */
+    public void atualizarEmail(Connection conn, Usuario u) throws SQLException {
+
+        String sql = "UPDATE Usuarios SET email = ? WHERE id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, u.getEmail());
+            stmt.setInt(2, u.getId());
+            stmt.executeUpdate();
+        }
+    }
+
+    /**
+     * Atualiza email + senha (USADO SOMENTE SE ALTERAR SENHA = TRUE)
+     */
+    public void atualizarEmailSenha(Connection conn, Usuario u) throws SQLException {
+
+        if (u.getSenha() == null || u.getSenha().trim().isEmpty()) {
+            throw new SQLException("Senha não pode ser nula ao atualizar email+senha.");
+        }
+
+        String sql = "UPDATE Usuarios SET email = ?, senha = ? WHERE id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, u.getEmail());
+            stmt.setString(2, u.getSenha());
+            stmt.setInt(3, u.getId());
+            stmt.executeUpdate();
+        }
+    }
+
 }

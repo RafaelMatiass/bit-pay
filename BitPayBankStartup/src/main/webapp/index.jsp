@@ -63,7 +63,7 @@
                         <!-- Abrir conta -->
                         <p class="text-center mt-3">
                             Ainda não é cliente?  
-                            <a href="cadastro-page" class="text-decoration-none">Abrir conta</a>
+                            <a href="view/cadastro.jsp" class="text-decoration-none">Abrir conta</a>
                         </p>
 
                         <!-- Mensagens -->

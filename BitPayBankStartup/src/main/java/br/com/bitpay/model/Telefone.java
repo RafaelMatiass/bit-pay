@@ -8,7 +8,8 @@ public class Telefone {
     private int codPais; 
     private int codArea;
     private long numero; 
-
+    
+    public Telefone() {}
     
     public Telefone(int codPais, int codArea, long numero) {
         this.codPais = codPais;
