@@ -6,7 +6,6 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.ZoneId;
 
 import br.com.bitpay.model.Cliente;
 import br.com.bitpay.model.Conta;
@@ -34,7 +33,7 @@ public class ContaDAO {
     }
 	
 	public void atualizarSaldo(Connection conn, int idConta, BigDecimal valor) throws SQLException {
-        String sql = "UPDATE Contas SET saldo = saldo + ? WHERE id_conta = ?";
+        String sql = "UPDATE Contas SET saldo = saldo + ? WHERE id = ?";
         
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setBigDecimal(1, valor);

@@ -20,6 +20,13 @@ VALUES
 (4, 'TRANSFERENCIA RECEBIDA'),
 (5, 'INVESTIMENTO');
 
+-- Dados Inseridos após Investimentos e Empréstimo
+INSERT INTO TiposMovimento (id, tipoMovimento)
+VALUES
+(6, 'RESGATE'),
+(7, 'EMPRESTIMO');
+
+-- COMMIT;
 SELECT * FROM TiposMovimento;
 
 
@@ -33,6 +40,14 @@ VALUES (seq_TiposInvestimento .NEXTVAL,'CDB Premium 2025', 0.012000, 30, 100.00)
 INSERT INTO TiposInvestimento (id ,nome, rentabilidadeMes, carenciaDias, valorMinimo) 
 VALUES (seq_TiposInvestimento .NEXTVAL,'Fundo Tech High Yield', 0.025000, 180, 1000.00); -- 2.5% ao mês, 180 dias carência
 SELECT * FROM TiposInvestimento;
+
+-- POPULAR STATUS DE EMPRÉSTIMO
+INSERT INTO STATUSEMPRESTIMO (id, descricao) VALUES (1, 'ATIVO');
+INSERT INTO STATUSEMPRESTIMO (id, descricao) VALUES (2, 'QUITADO');
+
+-- POPULAR STATUS DE PARCELAS DE EMPRÉSTIMO
+INSERT INTO STATUSPARCELASEMPRESTIMO (id, descricao) VALUES (1, 'ABERTA');
+INSERT INTO STATUSPARCELASEMPRESTIMO (id, descricao) VALUES (2, 'PAGA');
 
 
 

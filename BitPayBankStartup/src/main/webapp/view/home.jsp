@@ -49,9 +49,9 @@
                 Olá, <%= nomeUsuario.split(" ")[0] %>
               </span>
             </li>
-            <li class="nav-item ms-3">
+<!--             <li class="nav-item ms-3">
               <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalLogin">Login</button>
-            </li>
+            </li> -->
             <li class="nav-item ms-3">
               <a href="logout" class="btn btn-outline-danger btn-sm">Sair</a>
             </li>
@@ -115,7 +115,7 @@
             </div>
 
             <div class="col-md-4">
-                <a href="emprestimo-page" class="text-decoration-none">
+                <a href="emprestimo" class="text-decoration-none">
                     <div class="card p-3 text-center h-100">
                         <i class="bi bi-cash-coin fs-1"></i>
                         <h5>Simular Empréstimo</h5>

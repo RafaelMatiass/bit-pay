@@ -110,10 +110,14 @@
                                                 out.print(nome != null ? nome : "Remetente Inválido");
                                             } else if (mov.getTipoMovimento() == TipoMovimento.DEPOSITO) {
                                                 out.print("Própria Conta");
+                                            } else if (mov.getTipoMovimento() == TipoMovimento.EMPRESTIMO) {
+                                                    out.print("Própria Conta");
+                                            } else if (mov.getTipoMovimento() == TipoMovimento.INVESTIMENTO) {
+                                                out.print("Própria Conta");
                                             } else if (mov.getTipoMovimento() == TipoMovimento.SAQUE) {
                                                 out.print("Caixa Eletrônico");
                                             } else {
-                                                out.print("-");
+                                                out.print(" ");
                                             }
                                         %>
                                     </td>
@@ -128,9 +132,9 @@
                                             } else if (mov.getTipoMovimento() == TipoMovimento.TRANSFERENCIA_RECEBIDA) {
                                                 out.print(numeroConta != null ? numeroConta : "Externo");
                                             } else if (mov.getTipoMovimento() == TipoMovimento.DEPOSITO || mov.getTipoMovimento() == TipoMovimento.SAQUE) {
-                                                out.print("-"); 
+                                                out.print(" "); 
                                             } else {
-                                                out.print("-");
+                                                out.print(" ");
                                             }
                                         %>
                                     </td>

@@ -31,7 +31,6 @@ FOR EACH ROW
 DECLARE
     v_sinal NUMBER;
 BEGIN
-    -- Define se é acréscimo (+1) ou decréscimo (-1) no saldo
     CASE :NEW.IDTIPOMOVIMENTO
         WHEN 1 THEN -- DEPOSITO
             v_sinal := 1;
@@ -42,7 +41,11 @@ BEGIN
         WHEN 4 THEN -- TRANSFERENCIA RECEBIDA
             v_sinal := 1;
         WHEN 5 THEN -- INVESTIMENTO
-            v_sinal := -1;
+            v_sinal := 1;
+        WHEN 6 THEN -- RESGATE
+            v_sinal := 1;
+        WHEN 7 THEN -- EMPRESTIMO
+            v_sinal := 1;
         ELSE
             v_sinal := 0; -- Nenhuma alteração
     END CASE;
@@ -57,9 +60,6 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20005, 'Erro no gatilho de saldo para a conta ' || :NEW.IDCONTA || ': ' || SQLERRM);
 END;
 /
-
-
-
 
 
 -- Controle de Transações (COMMIT/ROLLBACK)

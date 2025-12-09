@@ -202,6 +202,7 @@ CREATE TABLE Movimentacoes (
 );
 ALTER TABLE Movimentacoes
 ADD idContaDestino number (10);
+
 -- Tabela: Emprestimos
 CREATE SEQUENCE seq_Emprestimos
     START WITH 1 
@@ -218,7 +219,12 @@ CREATE TABLE Emprestimos (
     idStatusEmprestimo NUMBER(10) NOT NULL
 );
 
--- Tabela: parcelasEmprestimos
+-- 1. ADICIONA A COLUNA VALORENTRADA
+ALTER TABLE EMPRESTIMOS
+ADD (VALORENTRADA NUMBER(10,2) DEFAULT 0.00 NOT NULL);
+
+-- commit;
+
 CREATE SEQUENCE seq_parcelasEmprestimos 
     START WITH 1
     INCREMENT BY 1
@@ -235,7 +241,7 @@ CREATE TABLE ParcelasEmprestimos (
     idStatusParcela NUMBER(10) NOT NULL
 );  
 
-
+-- Tabela: Recuperar Senha
 CREATE TABLE RECUPERACAO_SENHA (
     ID              NUMBER PRIMARY KEY,
     ID_USUARIO      NUMBER NOT NULL,
@@ -334,3 +340,5 @@ ALTER TABLE ParcelasEmprestimos ADD CONSTRAINT
 ALTER TABLE ParcelasEmprestimos ADD CONSTRAINT 
     fk_Parcelas_Emprestimo FOREIGN KEY (idEmprestimo)
     REFERENCES Emprestimos(id);
+    
+    
