@@ -316,6 +316,12 @@
     Object usuarioLogado = session.getAttribute("usuario");
 %>
 
+<%
+    String mensagemSessao = (String) session.getAttribute("mensagem");
+    String tipoSessao = (String) session.getAttribute("tipoMensagem");
+    boolean mostrarModalAnalise = mensagemSessao != null && "success".equals(tipoSessao);
+%>
+
 <header>
     <h1>BitPay</h1>
     <nav>
@@ -474,6 +480,50 @@ function closeModal(){ document.getElementById('loginModal').style.display = 'no
 
 document.querySelector('header .btn-outline').onclick =()=> openModal();
 </script>
+
+<!-- ================= MODAL CADASTRO EM ANÁLISE (ADICIONADO) ================= -->
+<% if (mostrarModalAnalise) { %>
+<div class="modal fade" id="modalCadastroAnalise" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Cadastro enviado para análise</h5>
+            </div>
+            <div class="modal-body">
+                <p>Seu cadastro foi enviado com sucesso.</p>
+                <p><strong>Status:</strong> Em análise interna.</p>
+                <p>Você receberá um e-mail assim que a análise for concluída.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-bs-dismiss="modal">Entendi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    new bootstrap.Modal(
+        document.getElementById("modalCadastroAnalise")
+    ).show();
+});
+</script>
+
+<%
+    session.removeAttribute("mensagem");
+    session.removeAttribute("tipoMensagem");
+%>
+<% } %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function openModal(){ document.getElementById('loginModal').style.display = 'flex'; }
+function closeModal(){ document.getElementById('loginModal').style.display = 'none'; }
+
+document.querySelector('header .btn-outline').onclick =()=> openModal();
+</script>
+
 
 </body>
 </html>

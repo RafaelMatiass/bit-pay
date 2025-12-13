@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
-
 public class ContaServiceImpl implements ContaService {
 
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
@@ -30,15 +29,26 @@ public class ContaServiceImpl implements ContaService {
     private final ClienteDAO clienteDAO = new ClienteDAO();
     private final ContaDAO contaDAO = new ContaDAO();
 
-    private static final int COD_PAIS_PADRAO = 55; 
+    private static final int COD_PAIS_PADRAO = 55;
 
     @Override
-    public void abrirConta(String cpf, String email, String senha, String nome, LocalDate dataNascimento, 
-                           String telefoneStr, String cep, String logradouro, String numeroStr, 
-                           String bairro, String cidade, String estado) throws Exception {
-        
+    public void abrirConta(
+            String cpf,
+            String email,
+            String senha,
+            String nome,
+            LocalDate dataNascimento,
+            String telefoneStr,
+            String cep,
+            String logradouro,
+            String numeroStr,
+            String bairro,
+            String cidade,
+            String estado
+    ) throws Exception {
+
         Connection conn = null;
-        
+
         try {
             conn = ConnectionFactory.getConnection();
             conn.setAutoCommit(false);
@@ -47,27 +57,14 @@ public class ContaServiceImpl implements ContaService {
                 throw new IllegalArgumentException("CPF ou E-mail já cadastrados.");
             }
 
-            int numeroEndereco;
-            try {
-                numeroEndereco = Integer.parseInt(numeroStr);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Número do endereço inválido.");
-            }
-            Endereco novoEndereco = new Endereco(logradouro, numeroEndereco, null, bairro, cidade, estado, cep);
-            
+            int numeroEndereco = Integer.parseInt(numeroStr);
+            Endereco novoEndereco = new Endereco(
+                logradouro, numeroEndereco, null, bairro, cidade, estado, cep
+            );
+
             String telLimpo = telefoneStr.replaceAll("[^0-9]", "");
-            int codArea = 11; 
-            long numeroTel = 0;
-            try {
-                if (telLimpo.length() >= 10) {
-                    codArea = Integer.parseInt(telLimpo.substring(0, 2));
-                    numeroTel = Long.parseLong(telLimpo.substring(2));
-                } else {
-                    numeroTel = Long.parseLong(telLimpo);
-                }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Telefone inválido.");
-            }
+            int codArea = Integer.parseInt(telLimpo.substring(0, 2));
+            long numeroTel = Long.parseLong(telLimpo.substring(2));
             Telefone novoTelefone = new Telefone(COD_PAIS_PADRAO, codArea, numeroTel);
 
             Usuario novoUsuario = new Usuario(cpf, senha, email, TipoUsuario.CLIENTE);
@@ -75,82 +72,68 @@ public class ContaServiceImpl implements ContaService {
             novoUsuario.setId(idUsuario);
 
             int idEndereco = enderecoDAO.inserirEndereco(conn, novoEndereco);
-            novoEndereco.setId(idEndereco); 
+            novoEndereco.setId(idEndereco);
 
             int idTelefone = telefoneDAO.inserirTelefone(conn, novoTelefone);
             novoTelefone.setId(idTelefone);
 
-          
-            Cliente novoCliente = new Cliente(cpf, senha, email, TipoUsuario.CLIENTE, nome, dataNascimento, LocalDate.now(),novoEndereco, novoTelefone);
+            Cliente novoCliente = new Cliente(
+                cpf, senha, email, TipoUsuario.CLIENTE,
+                nome, dataNascimento, LocalDate.now(),
+                novoEndereco, novoTelefone
+            );
+
+            // FK CLIENTES.IDUSUARIO
             novoCliente.setId(idUsuario);
-           
-            clienteDAO.inserir(conn, novoCliente);
-            
-           
+
+            // ✅ CAPTURA O ID REAL DO CLIENTE
+            int idCliente = clienteDAO.inserir(conn, novoCliente);
+            novoCliente.setClienteId(idCliente);
+
             String numeroConta = "100" + idUsuario + "-1";
-            
-            Conta novaConta = new Conta(numeroConta, BigDecimal.ZERO, LocalDate.now(),StatusConta.PENDENTE,novoCliente);
-            
+
+            Conta novaConta = new Conta(
+                numeroConta,
+                BigDecimal.ZERO,
+                LocalDate.now(),
+                StatusConta.PENDENTE,
+                novoCliente
+            );
+
             contaDAO.inserirConta(conn, novaConta);
 
             conn.commit();
 
         } catch (Exception e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                    System.err.println("Transação revertida devido a erro.");
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-            
-            e.printStackTrace();  
+            if (conn != null) conn.rollback();
             throw e;
-           
         } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+            if (conn != null) conn.close();
         }
     }
-    
+
     @Override
     public Conta buscarContaAtualizada(int idConta) throws Exception {
-        
-        Connection conn = null;
-        String sqlRefresh = "SELECT id, numeroConta, saldo, idStatusConta FROM CONTAS WHERE id = ?";
+        String sql = "SELECT id, numeroConta, saldo, idStatusConta FROM CONTAS WHERE id = ?";
 
-        try {
-            conn = ConnectionFactory.getConnection();
-            
-            try (PreparedStatement stmt = conn.prepareStatement(sqlRefresh)) {
-                stmt.setInt(1, idConta);
-                
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        Conta contaAtualizada = new Conta();
-                        contaAtualizada.setContaId(rs.getInt("id"));
-                        contaAtualizada.setNumeroConta(rs.getString("numeroConta"));
-                        contaAtualizada.setSaldo(rs.getBigDecimal("saldo")); 
-                        
-                        int codigoStatus = rs.getInt("idStatusConta");
-                        contaAtualizada.setStatusConta(StatusConta.getByCodigo(codigoStatus));
-                        
-                        return contaAtualizada; 
-                    }
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idConta);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Conta conta = new Conta();
+                    conta.setContaId(rs.getInt("id"));
+                    conta.setNumeroConta(rs.getString("numeroConta"));
+                    conta.setSaldo(rs.getBigDecimal("saldo"));
+                    conta.setStatusConta(
+                        StatusConta.getByCodigo(rs.getInt("idStatusConta"))
+                    );
+                    return conta;
                 }
             }
-            throw new Exception("Conta não encontrada ao tentar atualizar saldo.");
-
-        } catch (SQLException e) {
-            throw new Exception("Erro ao buscar conta atualizada no DB: " + e.getMessage(), e);
-        } finally {
-            conn.close();
         }
+        throw new Exception("Conta não encontrada.");
     }
 }

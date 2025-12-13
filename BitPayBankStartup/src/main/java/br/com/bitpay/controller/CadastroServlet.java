@@ -2,6 +2,8 @@ package br.com.bitpay.controller;
 
 import br.com.bitpay.service.ContaService;
 import br.com.bitpay.service.ContaServiceImpl;
+import br.com.bitpay.service.EmailCadastroService;
+
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -166,6 +168,10 @@ public class CadastroServlet extends HttpServlet {
                     cidade,
                     estado
             );
+            
+            EmailCadastroService emailService = new EmailCadastroService();
+            emailService.enviarEmailCadastroEmAnalise(email, nome);
+
 
             // Sucesso: mensagem na sessão e redireciona pro index
             request.getSession().setAttribute(
