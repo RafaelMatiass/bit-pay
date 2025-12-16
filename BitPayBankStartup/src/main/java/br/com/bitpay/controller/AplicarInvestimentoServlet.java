@@ -1,67 +1,81 @@
 package br.com.bitpay.controller;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+
+import br.com.bitpay.model.Conta;
 import br.com.bitpay.service.InvestimentoService;
 import br.com.bitpay.service.InvestimentoServiceImpl;
 
-import java.io.IOException;
-import java.math.BigDecimal;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
-@WebServlet("/aplicarInvestimento")
+@WebServlet("/aplicar-investimento")
 public class AplicarInvestimentoServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    
 
-    private final InvestimentoService investimentoService = new InvestimentoServiceImpl();
+    private final InvestimentoService investimentoService =
+            new InvestimentoServiceImpl();
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
-        
-        String idContaStr = request.getParameter("idConta");
-        String idTipoInvestimentoStr = request.getParameter("idTipoInvestimento");
-        String valorAplicacaoStr = request.getParameter("valorAplicacao");
-        
-        String mensagem = null;
-        String tipoMensagem = "danger"; 
-        try {
-          
-            int idConta = Integer.parseInt(idContaStr);
-            int idTipoInvestimento = Integer.parseInt(idTipoInvestimentoStr);
-            
-           
-            BigDecimal valorAplicacao = new BigDecimal(valorAplicacaoStr);
-            
-           
-            investimentoService.aplicarInvestimento(idConta, idTipoInvestimento, valorAplicacao);
-            
-           
-            mensagem = "Aplicação em investimento realizada com sucesso! O valor de " 
-                       + valorAplicacao.toPlainString() + " foi debitado de sua conta.";
-            tipoMensagem = "success";
-            
-        } catch (NumberFormatException e) {
-            mensagem = "Erro de entrada: O valor ou o ID não é um número válido.";
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-         
-            mensagem = e.getMessage();
-        } catch (Exception e) {
-           
-            mensagem = "Erro de sistema. A transação não pôde ser completada. " + e.getMessage();
-            e.printStackTrace();
+
+        HttpSession session = req.getSession(false);
+        Conta conta = (session != null)
+                ? (Conta) session.getAttribute("conta")
+                : null;
+
+        if (conta == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
         }
-        
-       
-        request.getSession().setAttribute("mensagem", mensagem);
-        request.getSession().setAttribute("tipoMensagem", tipoMensagem);
-        
-     
-        response.sendRedirect("investimentos"); 
+
+        try {
+            int idTipoInvestimento =
+                    Integer.parseInt(req.getParameter("idTipoInvestimento"));
+
+            BigDecimal valor =
+                    new BigDecimal(req.getParameter("valor"));
+
+            if (valor.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new Exception("Valor inválido para investimento.");
+            }
+
+            if (conta.getSaldo().compareTo(valor) < 0) {
+                throw new Exception("Saldo insuficiente.");
+            }
+
+            // 🔹 Service cuida de tudo:
+            // - debita saldo
+            // - cria aplicação
+            investimentoService.aplicarInvestimento(
+                    conta.getContaId(),
+                    idTipoInvestimento,
+                    valor
+            );
+
+            // 🔹 NÃO mexe no saldo aqui
+            session.setAttribute(
+                    "mensagem",
+                    "Investimento aplicado com sucesso!"
+            );
+            session.setAttribute("tipoMensagem", "success");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute(
+                    "mensagem",
+                    "Erro ao aplicar investimento: " + e.getMessage()
+            );
+            session.setAttribute("tipoMensagem", "danger");
+        }
+
+        resp.sendRedirect(req.getContextPath() + "/investimentos");
     }
 }

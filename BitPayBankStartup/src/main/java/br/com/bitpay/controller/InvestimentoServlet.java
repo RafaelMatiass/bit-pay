@@ -1,13 +1,11 @@
 package br.com.bitpay.controller;
 
-import br.com.bitpay.model.Cliente;
 import br.com.bitpay.model.Conta;
-import br.com.bitpay.model.TipoInvestimento;
+import br.com.bitpay.service.ContaService;
+import br.com.bitpay.service.ContaServiceImpl;
 import br.com.bitpay.service.InvestimentoService;
 import br.com.bitpay.service.InvestimentoServiceImpl;
 
-import java.io.IOException;
-import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,60 +13,61 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import java.io.IOException;
+
 @WebServlet("/investimentos")
 public class InvestimentoServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    
-    
-    private final InvestimentoService investimentoService = new InvestimentoServiceImpl();
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    private final InvestimentoService investimentoService =
+            new InvestimentoServiceImpl();
+
+    private final ContaService contaService =
+            new ContaServiceImpl();
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
-        HttpSession sessao = request.getSession(false);
-        
-       
-        if (sessao == null || sessao.getAttribute("usuarioLogado") == null || sessao.getAttribute("conta") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+
+        HttpSession session = req.getSession(false);
+        Conta contaSessao = (session != null)
+                ? (Conta) session.getAttribute("conta")
+                : null;
+
+        if (contaSessao == null) {
+            resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
-
         try {
-        	
-        	
-        	 Cliente clienteLogado = (Cliente) sessao.getAttribute("usuarioLogado");
-             Conta contaLogada = (Conta) sessao.getAttribute("conta");
+            // 🔹 BUSCA A CONTA REAL DO BANCO
+            Conta contaAtualizada =
+                    contaService.buscarContaAtualizada(contaSessao.getContaId());
 
-      
-            List<TipoInvestimento> tipos = investimentoService.listarTiposInvestimento();
+            // 🔹 ATUALIZA A SESSÃO
+            session.setAttribute("conta", contaAtualizada);
 
-           
-           
-            String mensagem = (String) sessao.getAttribute("mensagem");
-            String tipoMensagem = (String) sessao.getAttribute("tipoMensagem");
+            // 🔹 USA SEMPRE O SALDO ATUALIZADO
+            req.setAttribute("saldoConta", contaAtualizada.getSaldo());
 
-    
-            sessao.removeAttribute("mensagem");
-            sessao.removeAttribute("tipoMensagem");
+            req.setAttribute(
+                    "tiposInvestimento",
+                    investimentoService.listarTiposInvestimento()
+            );
 
-         
-            request.setAttribute("tiposInvestimento", tipos);
-            request.setAttribute("saldoConta", contaLogada.getSaldo().toPlainString());
-            request.setAttribute("idConta", contaLogada.getContaId());
-            request.setAttribute("mensagem", mensagem);
-            request.setAttribute("tipoMensagem", tipoMensagem);
+            req.setAttribute(
+                    "portfolio",
+                    investimentoService.listarPortfolio(contaAtualizada.getContaId())
+            );
 
-         
-            request.getRequestDispatcher("/view/Investimentos.jsp").forward(request, response);
+            req.getRequestDispatcher("/view/investimentos-caixinhas.jsp")
+               .forward(req, resp);
 
         } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("mensagemErro", "Erro ao carregar a lista de investimentos.");
-            request.getRequestDispatcher("/view/home.jsp").forward(request, response);
+            throw new ServletException(
+                    "Erro ao carregar página de investimentos", e
+            );
         }
     }
-    
-   
 }
