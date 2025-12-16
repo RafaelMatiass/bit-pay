@@ -192,14 +192,7 @@
             </a>
         </div>
 
-        <div class="col-md-4">
-            <a href="meus-investimentos" class="text-decoration-none text-dark">
-                <div class="menu-card text-center">
-                    <i class="bi bi-boxes"></i>
-                    <h5 class="mt-2">Meus Investimentos</h5>
-                </div>
-            </a>
-        </div>
+      
 
         <div class="col-md-4">
             <a href="emprestimo" class="text-decoration-none text-dark">

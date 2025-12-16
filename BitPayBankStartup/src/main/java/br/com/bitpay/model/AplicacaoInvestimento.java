@@ -4,82 +4,103 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class AplicacaoInvestimento {
-	private int id;
-	private int idConta; 
-	private TipoInvestimento tipoInvestimento;
-	private BigDecimal valorAplicado;
-	private LocalDate dataAplicacao;
-	private String status;
-	
-	public AplicacaoInvestimento(int idConta, TipoInvestimento tipoInvestimento, BigDecimal valorAplicado) {
-		this.idConta = idConta;
-		this.tipoInvestimento = tipoInvestimento;
-		this.valorAplicado = valorAplicado;
-		this.dataAplicacao = LocalDate.now();
-		this.status = "ATIVA";
-	}
 
-	public AplicacaoInvestimento(int id, int idConta, TipoInvestimento tipoInvestimento, BigDecimal valorAplicado,
-			LocalDate dataAplicacao, String status) {
-		super();
-		this.id = id;
-		this.idConta = idConta;
-		this.tipoInvestimento = tipoInvestimento;
-		this.valorAplicado = valorAplicado;
-		this.dataAplicacao = dataAplicacao;
-		this.status = status;
-	}
+    private int id;
+    private int idConta;
+    private TipoInvestimento tipoInvestimento;
+    private BigDecimal valorAplicado;
+    private LocalDate dataAplicacao;
+    private String status;
 
-	public int getId() {
-		return id;
-	}
+    /* ===============================
+       CONSTRUTOR VAZIO (OBRIGATÓRIO)
+       =============================== */
+    public AplicacaoInvestimento() {
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    /* =========================================
+       CONSTRUTOR USADO NA APLICAÇÃO (INSERT)
+       ========================================= */
+    public AplicacaoInvestimento(
+            int idConta,
+            TipoInvestimento tipoInvestimento,
+            BigDecimal valorAplicado
+    ) {
+        this.idConta = idConta;
+        this.tipoInvestimento = tipoInvestimento;
+        this.valorAplicado = valorAplicado;
+        this.dataAplicacao = LocalDate.now();
+        this.status = "ATIVA";
+    }
 
-	public int getIdConta() {
-		return idConta;
-	}
+    /* =========================================
+       CONSTRUTOR USADO PELOS DAOs (SELECT)
+       ========================================= */
+    public AplicacaoInvestimento(
+            int id,
+            int idConta,
+            TipoInvestimento tipoInvestimento,
+            BigDecimal valorAplicado,
+            LocalDate dataAplicacao,
+            String status
+    ) {
+        this.id = id;
+        this.idConta = idConta;
+        this.tipoInvestimento = tipoInvestimento;
+        this.valorAplicado = valorAplicado;
+        this.dataAplicacao = dataAplicacao;
+        this.status = status;
+    }
 
-	public void setIdConta(int idConta) {
-		this.idConta = idConta;
-	}
+    /* ===============================
+       GETTERS E SETTERS
+       =============================== */
 
-	public TipoInvestimento getTipoInvestimento() {
-		return tipoInvestimento;
-	}
+    public int getId() {
+        return id;
+    }
 
-	public void setTipoInvestimento(TipoInvestimento tipoInvestimento) {
-		this.tipoInvestimento = tipoInvestimento;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public BigDecimal getValorAplicado() {
-		return valorAplicado;
-	}
+    public int getIdConta() {
+        return idConta;
+    }
 
-	public void setValorAplicado(BigDecimal valorAplicado) {
-		this.valorAplicado = valorAplicado;
-	}
+    public void setIdConta(int idConta) {
+        this.idConta = idConta;
+    }
 
-	public LocalDate getDataAplicacao() {
-		return dataAplicacao;
-	}
+    public TipoInvestimento getTipoInvestimento() {
+        return tipoInvestimento;
+    }
 
-	public void setDataAplicacao(LocalDate dataAplicação) {
-		this.dataAplicacao = dataAplicação;
-	}
+    public void setTipoInvestimento(TipoInvestimento tipoInvestimento) {
+        this.tipoInvestimento = tipoInvestimento;
+    }
 
-	public String getStatus() {
-		return status;
-	}
+    public BigDecimal getValorAplicado() {
+        return valorAplicado;
+    }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
-	
-	
-	
-	
-	
+    public void setValorAplicado(BigDecimal valorAplicado) {
+        this.valorAplicado = valorAplicado;
+    }
+
+    public LocalDate getDataAplicacao() {
+        return dataAplicacao;
+    }
+
+    public void setDataAplicacao(LocalDate dataAplicacao) {
+        this.dataAplicacao = dataAplicacao;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

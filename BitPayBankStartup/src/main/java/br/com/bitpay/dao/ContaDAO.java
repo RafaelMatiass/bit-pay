@@ -16,7 +16,11 @@ public class ContaDAO {
 
     private final ClienteDAO clienteDAO = new ClienteDAO();
 
+    /* =========================================================
+       INSERIR CONTA
+       ========================================================= */
     public void inserirConta(Connection conn, Conta conta) throws SQLException {
+
         String sql = """
             INSERT INTO Contas
             (id, numeroConta, saldo, dataAbertura, idStatusConta, idCliente)
@@ -24,36 +28,99 @@ public class ContaDAO {
         """;
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, conta.getNumeroConta());
             stmt.setBigDecimal(2, conta.getSaldo());
             stmt.setDate(3, Date.valueOf(conta.getDataAbertura()));
             stmt.setInt(4, conta.getStatusConta().getCodigo());
-
-            // ✅ CORREÇÃO CRÍTICA: FK usa CLIENTES.ID
             stmt.setInt(5, conta.getCliente().getClienteId());
-
             stmt.executeUpdate();
         }
     }
 
-    public void atualizarSaldo(Connection conn, int idConta, BigDecimal valor) throws SQLException {
+    /* =========================================================
+       BUSCAR SALDO (VERSÃO QUE LANÇA EXCEÇÃO)
+       👉 usada em investimentos / empréstimos
+       ========================================================= */
+    public BigDecimal buscarSaldo(Connection conn, int idConta) throws SQLException {
+
+        String sql = "SELECT saldo FROM Contas WHERE id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idConta);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBigDecimal("saldo");
+                }
+            }
+        }
+        throw new SQLException("Conta não encontrada para ID: " + idConta);
+    }
+
+    /* =========================================================
+       BUSCAR SALDO (VERSÃO SEGURA)
+       👉 usada quando não pode quebrar fluxo
+       ========================================================= */
+    public BigDecimal buscarSaldoContaPorId(Connection conn, int idConta) throws SQLException {
+
+        String sql = "SELECT saldo FROM Contas WHERE id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idConta);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBigDecimal("saldo");
+                }
+            }
+        }
+        return BigDecimal.ZERO;
+    }
+
+    /* =========================================================
+       AJUSTAR SALDO (CRÉDITO / DÉBITO)
+       👉 soma ou subtrai
+       👉 usado em depósito, saque, investimento, resgate
+       ========================================================= */
+    public void ajustarSaldo(Connection conn, int idConta, BigDecimal valor)
+            throws SQLException {
+
         String sql = "UPDATE Contas SET saldo = saldo + ? WHERE id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setBigDecimal(1, valor);
             stmt.setInt(2, idConta);
 
-            int linhasAfetadas = stmt.executeUpdate();
-            if (linhasAfetadas == 0) {
-                throw new SQLException(
-                    "Erro: Nenhuma conta encontrada com o ID " + idConta
-                );
+            if (stmt.executeUpdate() == 0) {
+                throw new SQLException("Nenhuma conta encontrada com ID " + idConta);
             }
         }
     }
 
-    public Conta buscarContaPorId(int id) throws SQLException {
+    /* =========================================================
+       ATUALIZAR SALDO (VALOR ABSOLUTO)
+       👉 usado quando o saldo final já foi calculado
+       ========================================================= */
+    public void atualizarSaldo(Connection conn, int idConta, BigDecimal novoSaldo)
+            throws SQLException {
+
+        String sql = "UPDATE Contas SET saldo = ? WHERE id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setBigDecimal(1, novoSaldo);
+            stmt.setInt(2, idConta);
+
+            if (stmt.executeUpdate() == 0) {
+                throw new SQLException("Nenhuma conta encontrada com ID " + idConta);
+            }
+        }
+    }
+
+    /* =========================================================
+       BUSCAR CONTA COMPLETA POR ID
+       ========================================================= */
+    public Conta buscarContaPorId(int idConta) throws SQLException {
+
         String sql = """
             SELECT id, numeroConta, saldo, dataAbertura, idStatusConta, idCliente
             FROM Contas
@@ -63,13 +130,13 @@ public class ContaDAO {
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, id);
+            stmt.setInt(1, idConta);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    int idCliente = rs.getInt("idCliente");
 
-                    Cliente cliente = clienteDAO.buscarClientePorId(idCliente);
+                    Cliente cliente =
+                        clienteDAO.buscarClientePorId(rs.getInt("idCliente"));
 
                     return new Conta(
                         rs.getInt("id"),
@@ -83,22 +150,5 @@ public class ContaDAO {
             }
         }
         return null;
-    }
-    
-    public BigDecimal buscarSaldoContaPorId(Connection conn, int idConta) throws SQLException {
-        String sql = "SELECT saldo FROM Contas WHERE id = ?";
-        
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, idConta);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getBigDecimal("saldo");
-                }
-            }
-        }
-        return BigDecimal.ZERO; 
     }
 }
