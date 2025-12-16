@@ -1,5 +1,6 @@
 package br.com.bitpay.service;
 
+import br.com.bitpay.dao.ContaDAO;
 import br.com.bitpay.dao.EmprestimoDAO;
 import br.com.bitpay.dao.MovimentacaoDAO;
 import br.com.bitpay.dao.ParcelaEmprestimoDAO;
@@ -19,7 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EmprestimoService {
-
+	
+	private final ContaDAO contaDAO = new ContaDAO();
     private final EmprestimoDAO emprestimoDAO = new EmprestimoDAO();
     private final MovimentacaoDAO movimentacaoDAO = new MovimentacaoDAO(); 
     
@@ -116,4 +118,69 @@ public class EmprestimoService {
             conn.close();
         }
     }
+    
+    public List<Emprestimo> listarEmprestimosDoCliente(int idConta) throws Exception {
+        return emprestimoDAO.buscarEmprestimosPorConta(idConta);
+    }
+    
+    public Emprestimo detalharEmprestimo(int idEmprestimo) throws Exception {
+        Emprestimo emprestimo = emprestimoDAO.buscarEmprestimoPorId(idEmprestimo);
+        if (emprestimo != null) {
+            List<ParcelaEmprestimo> parcelas = parcelaDAO.buscarParcelasPorEmprestimo(idEmprestimo);
+            emprestimo.setParcelas(parcelas);
+        }
+        return emprestimo;
+    }
+    
+public void pagarParcela(int idConta, int idParcela) throws Exception {
+        
+        Connection conn = null;
+        try {
+            conn = ConnectionFactory.getConnection();
+            conn.setAutoCommit(false);
+            
+            ParcelaEmprestimo parcela = parcelaDAO.buscarParcelaPorId(conn, idParcela);
+            
+            if (parcela == null) {
+                throw new IllegalArgumentException("Parcela não encontrada.");
+            }
+            if (parcela.getStatus() != StatusParcelasEmprestimo.ABERTA) {
+                 throw new IllegalArgumentException("Esta parcela não está aberta para pagamento.");
+            }
+            
+            BigDecimal valorPagamento = parcela.getValorParcela();
+            
+            BigDecimal saldoAtual = contaDAO.buscarSaldoContaPorId(conn, idConta);
+            
+            if (saldoAtual.compareTo(valorPagamento) < 0) {
+                 throw new IllegalArgumentException("Saldo insuficiente na conta para pagar a parcela. Saldo atual: R$ " + saldoAtual);
+            }
+            
+           
+            parcelaDAO.pagarParcela(conn, idParcela, valorPagamento);
+            
+        
+            movimentacaoDAO.inserir(conn, new Movimentacao(valorPagamento.negate(), idConta, null, TipoMovimento.PAGAMENTO_EMPRESTIMO));
+            
+          
+            conn.commit();
+            
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback(); 
+                } catch (SQLException ex) {
+                    System.err.println("Erro ao tentar fazer rollback: " + ex.getMessage());
+                }
+            }
+          
+            throw new Exception("Falha ao processar o pagamento da parcela. Transação desfeita.", e);
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+    
+    
 }

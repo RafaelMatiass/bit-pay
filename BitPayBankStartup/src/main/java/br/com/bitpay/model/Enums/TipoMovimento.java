@@ -7,8 +7,8 @@ public enum TipoMovimento {
 	TRANSFERENCIA_RECEBIDA(4, "Transferência Recebida"),
 	INVESTIMENTO(5, "Investimento"),
 	RESGATE(6, "Resgate Investimento"),
-	EMPRESTIMO(7, "Emprestimo");
-//	PAGAMENTO_EMPRESTIMO(6, "Pagamento de Empréstimo"); Precisa ser implemtado
+	EMPRESTIMO(7, "Emprestimo"),
+	PAGAMENTO_EMPRESTIMO(8, "Pagamento de Empréstimo"); 
 
 	private final int id;
 	private final String descricao;

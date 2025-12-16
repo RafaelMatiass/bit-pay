@@ -26,7 +26,10 @@ VALUES
 (6, 'RESGATE'),
 (7, 'EMPRESTIMO');
 
--- COMMIT;
+INSERT INTO TiposMovimento (id, tipoMovimento)
+VALUES(8, 'PAGAMENTO_EMPRESTIMO');
+
+ --COMMIT;
 SELECT * FROM TiposMovimento;
 
 

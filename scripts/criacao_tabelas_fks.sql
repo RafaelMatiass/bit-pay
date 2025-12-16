@@ -239,7 +239,15 @@ CREATE TABLE ParcelasEmprestimos (
     dataPagamento DATE,
     idEmprestimo NUMBER(10) NOT NULL,
     idStatusParcela NUMBER(10) NOT NULL
-);  
+); 
+ALTER TABLE ParcelasEmprestimos 
+ADD (VALORAMORTIZACAO NUMBER(10, 2));
+
+ALTER TABLE ParcelasEmprestimos 
+ADD (VALORJUROS NUMBER(10, 2));
+
+ALTER TABLE ParcelasEmprestimos 
+ADD(SALDODEVEDORAPOSPAGAMENTO NUMBER(10, 2));
 
 -- Tabela: Recuperar Senha
 CREATE TABLE RECUPERACAO_SENHA (

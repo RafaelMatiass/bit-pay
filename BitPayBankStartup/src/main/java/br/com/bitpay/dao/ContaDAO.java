@@ -84,4 +84,21 @@ public class ContaDAO {
         }
         return null;
     }
+    
+    public BigDecimal buscarSaldoContaPorId(Connection conn, int idConta) throws SQLException {
+        String sql = "SELECT saldo FROM Contas WHERE id = ?";
+        
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, idConta);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBigDecimal("saldo");
+                }
+            }
+        }
+        return BigDecimal.ZERO; 
+    }
 }

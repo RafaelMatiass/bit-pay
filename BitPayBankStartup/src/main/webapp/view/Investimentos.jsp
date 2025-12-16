@@ -66,9 +66,9 @@
                             <h5 class="card-title text-primary"><%= tipo.getNome() %></h5>
                             <hr>
                             <p class="card-text">
-                                **Rentabilidade Mensal:** <%= tipo.getRentabilidadeMes().multiply(new BigDecimal(100)).toPlainString() %>% <br>
-                                **Carência:** <%= tipo.getCarenciaDias() %> dias <br>
-                                **Valor Mínimo:** <%= nf.format(tipo.getValorMinimo()) %>
+                                Rentabilidade Mensal: <%= tipo.getRentabilidadeMes().multiply(new BigDecimal(100)).toPlainString() %>% <br>
+                                Carência: <%= tipo.getCarenciaDias() %> dias <br>
+                                Valor Mínimo: <%= nf.format(tipo.getValorMinimo()) %>
                             </p>
                             
                    
